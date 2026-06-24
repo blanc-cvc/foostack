@@ -10,7 +10,9 @@ exports._eventsType_keep = {
       'mousedown', 'mouseup', 'mousecancel', 'mouseout', 'mouseenter',
       'focus', 'focusout',
       'select', 'selectstart', 'selectionchange',
-      'contextmenu', 'copy', 'paste', 'cut'
+      'contextmenu', 'copy', 'paste', 'cut',
+      'keydown', 'keyup', 'keypress',
+      'input', 'change'
     ],
     'window': [
       'popstate',
@@ -20,7 +22,10 @@ exports._eventsType_keep = {
       'mousedown', 'mouseup', 'mousecancel', 'mouseout', 'mouseenter',
       'focus', 'focusout',
       'select', 'selectstart', 'selectionchange',
-      'contextmenu', 'copy', 'paste', 'cut'
+      'contextmenu', 'copy', 'paste', 'cut',
+      'keydown', 'keyup', 'keypress',
+      'input', 'change'
+      
     ]
 }
 
@@ -29,7 +34,7 @@ exports.keep_fn = {
   'document': ['createTextNode', 'querySelector', 'querySelectorAll', 'createRange']
 }
 
-const _state = { done: true };
+const _state = { done: false };
 exports.get_state = () => { return _state; }
 
 exports.init = () => {
@@ -79,13 +84,15 @@ exports.init = () => {
                           }
                           
                           
-                          /*
-                          if (!eventType.includes('error') && !eventType.includes('device') && !eventType.includes('scroll')) {
-                            document.querySelector('body > main > main > main').innerHTML += `-headerbody:debug:${_nodename}:${eventType}`;
-                          }
-                          */
+                          
+                          // if (!eventType.includes('error') && !eventType.includes('pointer') && !eventType.includes('wheel') && !eventType.includes('mouse') && !eventType.includes('device') && !eventType.includes('scroll')) {
+                          //   document.querySelector('body > main > main > main').innerHTML += `-headerbody:debug:${_nodename}:${eventType}`;
+                          // }
+                          
                         }, useCapture = true);
-                      } catch (e) {}
+                      } catch (e) {
+                        console.log("error in a try catch, you can ignore.")
+                      }
                     }
                 }
               }
@@ -129,7 +136,7 @@ exports.init = () => {
     }, 0);
 }
 
-//this.init();
+require('./header').init();
 
 
 // document:

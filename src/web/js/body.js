@@ -27,7 +27,7 @@ const stateCheck_complete = window.setInterval(() => {
     // document ready
     //_add_contextmenu_listener();
 
-    //__domething.cleanup_prototypes();
+    __domething.cleanup_prototypes();
     const stateCheck_cleanup_prototypes = window.setInterval(() => {
       if (__domething.get_state().done.cleanup_prototypes) {
         window.clearInterval(stateCheck_cleanup_prototypes);
@@ -85,7 +85,7 @@ const stateCheck_complete = window.setInterval(() => {
                 //print_edit_node(navigator.clipboard, 'navigator.clipboard');
                 //print_edit_node(document.querySelector('head > style'), 'head > style');
                 
-                //this.check_html_resources();
+                this.check_html_resources();
                 
                 // KEEP IT AT THE BOTTOM
                 // stopPropagation for _eventsType_keep
@@ -102,11 +102,11 @@ const stateCheck_complete = window.setInterval(() => {
                   }
                 }
                 
-                //__domething.cleanup_elements();
+                __domething.cleanup_elements();
                 const stateCheck_cleanup_elements = window.setInterval(() => {
                   if (__domething.get_state().done.cleanup_elements) {
                     window.clearInterval(stateCheck_cleanup_elements);
-                    //__domething.lock_prototypes();
+                    __domething.lock_prototypes();
                     const stateCheck_lock_prototypes = window.setInterval(() => {
                       if (__domething.get_state().done.lock_prototypes) {
                         window.clearInterval(stateCheck_lock_prototypes);

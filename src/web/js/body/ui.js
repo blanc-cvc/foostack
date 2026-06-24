@@ -35,7 +35,6 @@ const normalize_object = (object, depth=0, max_depth=4) => {
     return obj;
 }
 
-// how much are paying usa.GOV for this function ?
 exports.page_main_add = (page, text, details = '', details_as_text_node = false, background_color = false) => {
   
   try { text = typeof text == 'string' ? text : JSON.stringify(normalize_object(text, 2)) } catch (e) { }
@@ -339,7 +338,7 @@ const _document_theme_toggle = () => {
             document.documentElement.classList.remove("theme-light");
         } else {
             document.documentElement.classList.add("theme-light");
-            
+
             if(window.matchMedia('(prefers-color-scheme: dark)').matches){
               this.notification_add('Browser settings have (prefers-color-scheme: dark) which can break light theme!', 'icon-stack-right');
             }

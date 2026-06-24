@@ -3,8 +3,8 @@ const __header = require('./header');
 
 const _state = {
   done: {
-    cleanup_prototypes: true,
-    cleanup_elements: true,
+    cleanup_prototypes: false,
+    cleanup_elements: false,
     lock_prototypes: true
   }
 };

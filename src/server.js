@@ -29,8 +29,8 @@ if (process.env.FOOSTACK_DEV == "yes") {
 
 exports.http = require('node:http').createServer( (req, res) => {
     //running npm run build replace process.env.FOOSTACK_DEV by false
+    console.log(req.url);
     if (process.env.FOOSTACK_DEV == "yes") {
-      console.log(req.url);
       const _path_css = path.join(__dirname, 'web/css/styles.bundle.css');
       const _path_js_header = path.join(__dirname, 'web/js/header.bundle.js');
       const _path_js_body = path.join(__dirname, 'web/js/body.bundle.js');
@@ -68,7 +68,7 @@ exports.io = require('socket.io')(this.http, { // https://socket.io/docs/v4/serv
     pingInterval: 25000, // 25000ms default value
     pingTimeout: 20000, // 20000ms default value
     cookie: {
-        name: __utils_crypto.misc.generate.seed_int(100,4096),
+        name: __utils_crypto.misc.generate.seed_int(100,1024), //4096 or less
         path: "/", httpOnly: true, sameSite: "strict", secure: false
     }
 });
