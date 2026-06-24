@@ -1,0 +1,56 @@
+
+
+
+
+html > body > main > main > main > .notifications {
+  position: sticky;
+  top: 0;
+  right: 0;
+  left: 0;
+  max-height: var(--sub-header-height);
+  background: rgba(var(--background-rgb), 0.9);
+  overflow: hidden;
+  padding: 0;
+  z-index: 100;
+  
+  > * {
+    position: relative;
+    width: 100%;
+    height: var(--sub-header-height);;
+    > *:first-child { // > notification > icon
+      position: absolute;
+      top: 0;
+      width: var(--sub-header-height);
+      left: 0;
+      height: var(--sub-header-height);
+      background-size: calc(var(--sub-header-height) * var(--default-icon-background-size-factor));
+      box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+    }
+     > *:last-child { // > notification > button
+      position: absolute;
+      top: 0;
+      width: var(--sub-header-height);
+      right: 0;
+      height: var(--sub-header-height);
+      box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+      &:hover {
+        background: rgba(var(--color-rgb), 0.1);
+      }
+      i {
+        background-size: calc(var(--sub-header-height) * var(--default-icon-background-size-factor));
+      }
+    }
+    > *:not(:first-child):not(:last-child) { // > notification > text
+      position: absolute;
+      top: 0;
+      left: var(--sub-header-height);
+      right: var(--sub-header-height);
+      height: var(--sub-header-height);
+      overflow-x: scroll;
+      overflow-y: hidden;
+      white-space: nowrap;
+      line-height: calc(var(--sub-header-height) - (2 * var(--default-margin-padding)));
+      padding: var(--default-margin-padding);
+    }
+  }
+}

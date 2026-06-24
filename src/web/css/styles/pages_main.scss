@@ -1,0 +1,38 @@
+
+
+html {
+  > body {
+    > main > main > main {
+      overflow-wrap: anywhere;
+      
+      > * {
+        
+      }
+      > ._connection,
+      > ._console {
+        > div {
+          margin-bottom: var(--default-margin-padding);
+          > * {
+            padding: var(--default-margin-padding);
+            &:first-child { // text
+              background: rgba(var(--background-rgb), 0.8);
+            }
+            &:last-child { // details
+              background: rgba(var(--background-rgb), 0.6);
+              overflow-wrap: anywhere;
+            }
+          }
+        }
+      }
+      > ._connection {
+        
+      }
+      > ._console {
+        
+      }
+      > .main {
+        
+      }
+    }
+  }
+}

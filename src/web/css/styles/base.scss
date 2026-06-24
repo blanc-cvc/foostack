@@ -1,0 +1,625 @@
+// name: base.scss
+// for: html > body > header, main, footer > aside, section
+// modifier: body.left-panel-open body.right-panel-open
+//           body.left-panel-mini-open body.right-panel-mini-open
+//           html.theme-light
+
+* { // reset
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    background-repeat: no-repeat;
+    text-decoration: none;
+    display: block; // https://meyerweb.com/eric/tools/css/reset/reset.css
+    line-height: 1;
+    list-style: none;
+    quotes: none;
+    border-collapse: collapse;
+	  border-spacing: 0;
+	  font-family: monospace;
+	  font-size: var(--default-text-size);
+	  outline: none;
+}
+*:focus,
+*:focus-within,
+*:focus-visible {
+  //border: 0px !important;
+}
+html, body {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+script {
+  display: none;
+}
+.displaynone {
+  display: none;
+}
+html {
+    &.theme-light {
+        --color-rgb: var(--default-rgb-dark);
+        --background-rgb: var(--default-rgb-light);
+        --user-background: var(--user-background-light);
+        
+        background: rgba(var(--user-background-light), 1); // let user change this
+    }
+    &:not(.theme-light) {
+        --color-rgb: var(--default-rgb-light);
+        --background-rgb: var(--default-rgb-dark);
+        --user-background: var(--user-background-dark);
+        
+        background: rgba(var(--user-background-dark), 1); // let user change this
+    }
+    * {
+        color: rgba(var(--color-rgb), 0.9);
+    }
+    > head,
+    &:not(.noscript) noscript {
+        display: none;
+    }
+    &.noscript > body > main > main > main {
+        > *:not(noscript) {
+            display: none;
+        }
+        > noscript {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+.flex-1-2 { flex: 1 2; }
+.flex-2-1 { flex: 2 1; }
+.flex-0-min { flex: 0 0 min-content; } // https://developer.mozilla.org/fr/docs/Web/CSS/flex-basis
+.flex-1-min { flex: 1 0 min-content; }
+.flex-2-min { flex: 2 0 min-content; }
+.flex-1-2-min { flex: 1 2 min-content; }
+.flex-2-1-min { flex: 2 1 min-content; }
+
+body {
+    --asides-left-width: var(--default-asides-keep-width);
+    --asides-right-width: var(--default-asides-keep-width);
+
+    overflow: hidden;
+    background: rgba(var(--background-rgb), 0.65);
+
+    > header {
+      > main {
+        box-shadow: 0 1px rgba(var(--color-rgb), 0.1);
+      }
+    }
+    > footer {
+      > main {
+        box-shadow: 0 -1px rgba(var(--color-rgb), 0.1);
+      }
+      > aside {
+        &.right {
+          > * { // currently button
+            &.active {
+              background: rgba(var(--color-rgb), 0.8);
+            }
+          }
+        }
+      }
+    }
+    > * {
+        &:not(main) { // body > header , footer
+            &:not(header) > aside { // body > footer
+              &.left {
+                box-shadow: 1px -1px rgba(var(--color-rgb), 0.1);
+              }
+              &.right {
+                box-shadow: -1px -1px rgba(var(--color-rgb), 0.1);
+              }
+            }
+            &:not(footer) > aside { // body > header
+              &.left {
+                box-shadow: 1px 1px rgba(var(--color-rgb), 0.1);
+              }
+              &.right {
+                box-shadow: -1px 1px rgba(var(--color-rgb), 0.1);
+              }
+            }
+            background: rgba(var(--background-rgb), 0.2);
+            > header > aside {
+              //box-shadow: 0 1px rgba(var(--color-rgb), 0.1);
+            }
+            > * {
+                &:not(main) { // body > header , footer > aside
+                    > * {
+                        &:first-child {
+                            position: absolute;
+                            width: var(--asides-keep-width);
+                            &:not(.active) {
+                              background: rgba(var(--background-rgb), 0.1);
+                            }
+                        }
+                        &:not(:first-child) {
+                            display: none;
+                        }
+                    }
+                }
+                &.left { // body > header , footer > aside.left
+                    //box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                    > * {
+                        &:first-child {
+                            left: 0;
+                            //box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                        }
+                    }
+                    > nav {
+                        &::before {
+                            content: '';
+                            width: 100%;
+                        }
+                        left: var(--asides-keep-width);
+                        right: 0;
+                    }
+                }
+                &.right { // body > header , footer > aside.right
+                    //box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                    > * {
+                        &:first-child {
+                            right: 0;
+                            //box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                        }
+                    }
+                    > nav {
+                        &::after {
+                            content: '';
+                            width: 100%;
+                        }
+                        left: 0;
+                        right: var(--asides-keep-width);
+                    }
+                }
+                
+            }
+        } // END body > *:not(main)
+
+        // body > *
+        position: absolute;
+        left: 0;
+        right: 0;
+        > aside {
+            position: absolute;
+            background: rgba(var(--background-rgb), 0.1);
+            &.left {
+                left: 0;
+                width: var(--asides-left-width);
+            }
+            &.right {
+                right: 0;
+                width: var(--asides-right-width);
+            }
+        }
+        > main {
+            position: absolute;
+            left: var(--asides-left-width);
+            right: var(--asides-right-width);
+        }
+    } // END body > *
+    > main { // body > main
+        top: var(--header-height);
+        bottom: var(--footer-height);
+        > * {
+            &:not(main) {
+                &.left { // body > main > aside.left
+                    left: calc(var(--asides-keep-width) * -1);
+                    > header { // sub-header
+                      box-shadow: 1px 1px rgba(var(--color-rgb), 0.1);
+                    }
+                    > footer { // sub-footer
+                      box-shadow: 1px -1px rgba(var(--color-rgb), 0.1);
+                    }
+                    > * {
+                        &:not(main) { // body > main > aside.left > header , footer
+                            > * {
+                                &:first-child {
+                                    left: 0;
+                                    //box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                                }
+                            }
+                            > nav {
+                                &::before {
+                                    content: '';
+                                    width: 100%;
+                                }
+                                left: var(--asides-keep-width);
+                                right: 0;
+                            }
+                        }
+                        box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                        width: var(--asides-left-width);
+                    }
+                }
+                &.right { // body > main > aside.right
+                    right: calc(var(--asides-keep-width) * -1);
+                    > header { // sub-header
+                      box-shadow: -1px 1px rgba(var(--color-rgb), 0.1);
+                    }
+                    > footer { // sub-footer
+                      box-shadow: -1px -1px rgba(var(--color-rgb), 0.1);
+                    }
+                    > * {
+                        &:not(main) {  // body > main > aside.right > header , footer
+                            > * {
+                                &:first-child {
+                                    right: 0;
+                                    //box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                                }
+                            }
+                            > nav {
+                                &::after {
+                                    content: '';
+                                    width: 100%;
+                                }
+                                left: 0;
+                                right: var(--asides-keep-width);
+                            }
+                        }
+                        box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                        width: var(--asides-right-width);
+                    }
+                }
+                > *:not(main) > * { // body > main > aside > header , footer > *
+                    &:first-child {
+                        position: absolute;
+                        width: var(--asides-keep-width);
+                        background: rgba(var(--background-rgb), 0.1);
+                    }
+                    &:not(:first-child) {
+                        display: none;
+                    }
+                }
+            } // END body > main > aside
+
+            // body > main > *
+            top: 0;
+            bottom: 0;
+            > * { // body > main > * > *
+                &:not(main) { // body > main > * > header , footer
+                    background: rgba(var(--background-rgb), 0.1);
+                }
+                position: absolute;
+            }
+            
+            > header { // body > main > * > header
+                top: 0;
+                height: var(--sub-header-height);
+                box-shadow: 0 1px rgba(var(--color-rgb), 0.1);
+                > * {
+                    height: var(--sub-header-height);
+                }
+            }
+            > footer { // body > main > * > footer
+                bottom: 0;
+                height: var(--sub-footer-height);
+                box-shadow: 0 -1px rgba(var(--color-rgb), 0.1);
+                > * {
+                  height: var(--sub-footer-height);
+                  > section > input {
+                    //padding: 0 var(--default-margin-padding);
+                  }
+                }
+            }
+            > main { // body > main > * > main      // LAST MAIN == vertical center
+                top: var(--sub-header-height);
+                bottom: var(--sub-footer-height);
+                overflow-x: hidden;
+                overflow-y: auto;
+                > * {
+                    display: block;
+                    padding: var(--default-margin-padding);
+                }
+            }
+        } // END body > main > *
+        > main { // body > main > main
+            left: 0;
+            right: 0;
+            > * {
+                left: 0;
+                right: 0;
+            }
+            > footer > nav > section > textarea {
+              position: absolute;
+              top: 50%;
+              transform: translateY(-50%);
+              height: var(--default-text-size);
+              min-height: var(--default-text-size);
+              max-height: calc( var(--sub-footer-height) - var(--default-margin-padding) );
+              resize: none;
+            }
+        }
+    }
+
+    > header { // body > header
+        top: 0;
+        height: var(--header-height);
+        > * {
+            height: var(--header-height);
+            > * {
+                height: var(--header-height);
+            }
+        }
+    }
+    > footer { // body > footer
+        bottom: 0;
+        height: var(--footer-height);
+        > * {
+            height: var(--footer-height);
+            > * {
+                height: var(--footer-height);
+            }
+        }
+    }
+
+    // NAV
+    > *:not(main) > * > nav > section,
+    > main > * > *:not(main) > nav > section,
+    > *:not(main) > * > nav,
+    > main > * > *:not(main) > nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        white-space: nowrap; // https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+        &:not(section) { // nav
+            position: absolute;
+        }
+        > * {
+            position: relative;
+            height: 100%;
+        }
+    }
+    > *:not(main) > main > nav,
+    > main > main > *:not(main) > nav { // center nav only
+        left: 0;
+        right: 0;
+        > section {
+            // * {
+            //     background: rgba(var(--background-rgb), 0.1);
+            // }
+            > * { // currently button
+              &.active {
+                background: rgba(var(--color-rgb), 0.8);
+                > * {
+                  color: rgb(var(--background-rgb));
+                }
+              }
+              
+              display: inline-flex;
+              justify-content: center;
+              min-width: var(--default-asides-keep-width);
+
+              > div {
+                line-height: var(--footer-height);
+                padding-right: var(--default-margin-padding);
+              }
+              > i {
+                background-size: calc(var(--footer-height) * var(--default-icon-background-size-factor));
+                height: var(--footer-height);
+                width: var(--footer-height);
+              }
+            }
+            &:not(:first-child):not(:last-child) {
+                > * {
+                    width: 100%;
+                }
+            }
+            &:last-child {
+                &::before {
+                    //content: '';
+                    //width: 100%;
+                }
+            }
+        }
+        &.flex-section-equals {
+            > section {
+                //flex: 1;
+                &:first-child {
+                    &::after { // https://stackoverflow.com/a/62288570
+                        content: '';
+                        width: 100%;
+                    }
+                }
+                &:not(:first-child):not(:last-child) {
+                    &::before,
+                    &::after {
+                        content: '';
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    // DYNAMIC SPECIFICS
+    &.left-panel-open {
+        --asides-left-width: var(--default-asides-left-width);
+        > * {
+            &:not(main) > aside {
+                &.left > * {
+                    &:not(:first-child) {
+                        display: flex;
+                    }
+                    &:first-child {
+                        box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                    }
+                }
+            }
+            > aside.left { //body > * > aside.left
+                left: 0;
+            }
+            > main {
+                left: var(--asides-left-width);
+            }
+        }
+        > main {
+            > aside.left > *:not(main) > * {
+                &:not(:first-child) {
+                    display: flex;
+                }
+                &:first-child {
+                    box-shadow: 1px 0 rgba(var(--color-rgb), 0.1);
+                }
+            }
+        }
+    }
+    &.right-panel-open {
+        --asides-right-width: var(--default-asides-right-width);
+        > * {
+            &:not(main) > aside {
+                &.right > * {
+                    &:not(:first-child) {
+                        display: flex;
+                    }
+                    &:first-child {
+                        box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                    }
+                }
+            }
+            > aside.right { //body > * > aside.right
+                right: 0;
+            }
+            > main {
+                right: var(--asides-right-width);
+            }
+        }
+        > main {
+            > aside.right > *:not(main) > * {
+                &:not(:first-child) {
+                    display: flex;
+                }
+                &:first-child {
+                    box-shadow: -1px 0 rgba(var(--color-rgb), 0.1);
+                }
+            }
+        }
+    }
+    &.left-panel-mini-open > main {
+        > aside.left {
+            left: 0;
+        }
+        > main {
+            left: var(--asides-left-width);
+        }
+    }
+    &.right-panel-mini-open > main {
+        > aside.right {
+            right: 0;
+        }
+        > main {
+            right: var(--asides-right-width);
+        }
+    }
+}
+
+
+
+@media only screen and (max-width: 720px) {
+    html {
+        > body {
+            > main > main > footer {
+              &.stick-bottom {
+                position: fixed;
+                bottom: 0;
+                z-index: 1000;
+                height: calc(var(--footer-height) + var(--sub-footer-height));
+              }
+            }
+            > *:not(main) > main > nav > section > * > *:not(i) {
+                display: none;
+            }
+            &.left-panel-open {
+                > * {
+                    > main {
+                        left: var(--default-asides-keep-width);
+                    }
+                }
+            }
+            &.right-panel-open {
+                > * {
+                    > main {
+                        right: var(--default-asides-keep-width);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+// noscript only media queries // https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia
+@media only screen and (max-width: 1024px) {
+    html {
+        &.noscript {
+            body {
+                > *:not(main) { // header and footer
+                    > aside {
+                        --asides-left-width: var(--default-asides-keep-width);
+                        --asides-right-width: var(--default-asides-keep-width);
+                    }
+                }
+                > main {
+                    aside {
+                        --asides-left-width: var(--default-asides-keep-width);
+                        --asides-right-width: var(--default-asides-keep-width);
+                    }
+                    > main {
+                        left: 0;
+                        right: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+@media only screen and (max-width: 720px) {
+    html {
+        &.noscript {
+            body {
+                > *:not(main) { // header and footer
+                    > aside {
+                        --asides-left-width: var(--default-asides-keep-width);
+                        --asides-right-width: var(--default-asides-keep-width);
+                    }
+                }
+                > main {
+                    aside {
+                        --asides-left-width: var(--default-asides-keep-width);
+                        --asides-right-width: var(--default-asides-keep-width);
+                        &.left {
+                            left: calc(var(--asides-keep-width)* -1);
+                        }
+                        &.right {
+                            right: calc(var(--asides-keep-width)* -1);
+                        }
+                    }
+                    > main {
+                        left: 0;
+                        right: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+

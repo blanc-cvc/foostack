@@ -1,0 +1,37 @@
+@import "styles/vars.scss";
+// for: global css variables
+
+@import "styles/colors.scss";
+// for: global colors
+// modifier: html.theme-light .color-
+
+@import "styles/base.scss";
+// for: html > body > header, main, footer > aside, section
+// modifier: html.theme-light
+//           body.left-panel-open body.right-panel-open
+//           body.left-panel-mini-open body.right-panel-mini-open
+
+@import "styles/buttons.scss";
+// for: global buttons
+// modifier: 
+
+@import "styles/icons.scss";
+// for: global icons
+// modifier: html.theme-light .icon-color-
+
+@import "styles/notifications.scss";
+
+
+@import "styles/pages_main.scss";
+
+@import "styles/nav.scss";
+
+.copy {
+  position: absolute;
+  //top: 0;
+  right: 0;
+  z-index: 1;
+  padding: var(--default-margin-padding);
+  background: rgba(var(--color-rgb), 0.8);
+  color : rgb(var(--background-rgb));
+}
