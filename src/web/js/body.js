@@ -1,4 +1,6 @@
 
+exports.IS_FOOSTACK_DEV=true;
+
 const __header = require('./header');
 const __domething = require('./domething');
 const __body_ui = require('./body/ui');
@@ -22,12 +24,16 @@ exports.postMessage_socketio = (postMessage_data_socketio) => {
 
 // https://www.jstips.co/en/javascript/detect-document-ready-in-pure-js/
 const stateCheck_complete = window.setInterval(() => {
-  if ((document.readyState == 'complete') && __header.get_state().done) {
+  if (document.readyState != 'loading') {
     window.clearInterval(stateCheck_complete);
+
+    this.init_events_restriction()
+
     // document ready
     //_add_contextmenu_listener();
 
     __domething.cleanup_prototypes();
+    //print_edit_node(document, 'document');
     const stateCheck_cleanup_prototypes = window.setInterval(() => {
       if (__domething.get_state().done.cleanup_prototypes) {
         window.clearInterval(stateCheck_cleanup_prototypes);
@@ -90,9 +96,9 @@ const stateCheck_complete = window.setInterval(() => {
                 // KEEP IT AT THE BOTTOM
                 // stopPropagation for _eventsType_keep
                 const _events_stop_propagation_without_capture = ['click', 'focus', 'focusout'];
-                for (let instance in __header._eventsType_keep) {
+                for (let instance in this._eventsType_keep) {
                   const _nodeinstance = instance == 'window' ? window : document;
-                  for (let eventType of __header._eventsType_keep[instance]) {
+                  for (let eventType of this._eventsType_keep[instance]) {
                     if (typeof _nodeinstance.addEventListener == 'function') {
                       _nodeinstance.addEventListener(eventType, (event) => {
                         event.stopPropagation();
@@ -111,8 +117,13 @@ const stateCheck_complete = window.setInterval(() => {
                       if (__domething.get_state().done.lock_prototypes) {
                         window.clearInterval(stateCheck_lock_prototypes);
                         
+
+                        
                         // TEST AFTER LOCK
-                        //print_edit_node(document.querySelector('body > button'), 'body > button');
+                        print_edit_node(Document.prototype, 'Document.prototype');
+                        print_edit_node(Navigator.prototype, 'Navigator.prototype');
+                        print_edit_node(navigator, 'navigator');
+                        print_edit_node(document.querySelector('body > button'), 'body > button');
                       }
                     }, 0); // stateCheck_lock_prototypes
                   }
@@ -144,13 +155,13 @@ exports.check_html_resources = () => {
           ? `${resource.href.split('/')[resource.href.split('/').length-1]}:[/]${resource.href.split('/').length-1}`
           : ''}`
       ;
-      const _is_jsheader = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsheader') && ( __header.IS_FOOSTACK_DEV
+      const _is_jsheader = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsheader') && ( this.IS_FOOSTACK_DEV
         ? (resource.src && (resource.src.split('/')[3] == 'header.js'))
         : !resource.src )
-      const _is_jsbody = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsbody') && ( __header.IS_FOOSTACK_DEV
+      const _is_jsbody = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsbody') && ( this.IS_FOOSTACK_DEV
         ? (resource.src && (resource.src.split('/')[3] == 'body.js'))
         : !resource.src )
-      const _is_style = (__header.IS_FOOSTACK_DEV ? resource.tagName.toLowerCase() == 'link' : resource.tagName.toLowerCase() == 'style') && resource.id && (resource.id == 'style') && ( __header.IS_FOOSTACK_DEV
+      const _is_style = (this.IS_FOOSTACK_DEV ? resource.tagName.toLowerCase() == 'link' : resource.tagName.toLowerCase() == 'style') && resource.id && (resource.id == 'style') && ( this.IS_FOOSTACK_DEV
         ? (resource.href && (resource.href.split('/')[3] == 'styles.css'))
         : !resource.href )
       if (!_is_jsheader && !_is_jsbody && !_is_style) {
@@ -217,7 +228,7 @@ const print_edit_node = (_node, _node_name = '_node', _keep = []) => {
     //const _keep = [ // keep getAttribute
     //  "test"
     //]; 
-    const isundefined = [];
+    const isundefinedprototype = [];
     const isundefinednotinkeepfn = [];
     const isnullundefined = [];
     const isnotnull = [];
@@ -229,7 +240,7 @@ const print_edit_node = (_node, _node_name = '_node', _keep = []) => {
       }
       try {
         if (_node[key] == 'undefinedprototype') {
-          isundefined.push(key);
+          isundefinedprototype.push(key);
         } else if (_node[key] == 'undefinednotinkeepfn') {
           isundefinednotinkeepfn.push(key);
         } else if ((_node[key] == null) || (_node[key] == undefined)) {
@@ -239,10 +250,93 @@ const print_edit_node = (_node, _node_name = '_node', _keep = []) => {
         }
       } catch (e) {}
     }
-    __body_ui.page_main_add('_console', `${_node_name} undefinedprototype`, isundefined);
+    __body_ui.page_main_add('_console', `${_node_name} undefinedprototype`, isundefinedprototype);
     __body_ui.page_main_add('_console', `${_node_name} undefinednotinkeepfn`, isundefinednotinkeepfn);
     __body_ui.page_main_add('_console', `${_node_name} null || undefined`, isnullundefined);
     __body_ui.page_main_add('_console', `${_node_name}   => else`, isnotnull);
+}
+
+
+exports.init_events_restriction = () => {
+
+  const _handle_event_restriction = (node) => {
+    for (const key in node) {
+      if(/^on/.test(key)) {
+          const eventType = key.substr(2);
+
+          //const _nodename = node instanceof Window ? 'window' : 'document';
+          
+          if (!require('./domkeep').keep.events.includes(eventType)) {
+            try {
+              node.addEventListener(eventType, (event) => {
+                if (event.preventDefault) {
+                  event.preventDefault();
+                }
+                if (event.stopPropagation) {
+                  event.stopPropagation();
+                }
+                if (eventType.includes('error')) {
+                  const _el_triggered = `${event.target && event.target.tagName ? event.target.tagName.toLowerCase() : ''}:${event.target.class ? event.target.class : ''}`;
+                  const _el_listen = `${event.currentTarget && event.currentTarget.tagName ? event.currentTarget.tagName.toLowerCase() : ''}:${event.currentTarget.class ? event.currentTarget.class : ''}`;
+                  const _message = `triggered=${_el_triggered}; listener=${_el_listen}; eventType=${eventType}; filename=${event.filename}; message=${event.message}; errorString=${JSON.stringify(event.error)}`;
+                  const _messagetextnode = document.createTextNode(_message);
+                  (typeof window.console == 'object') && window.console._is_custom
+                    ? window.console.debug(_message, `ERROR: ${_el_triggered}`)
+                    : this.IS_FOOSTACK_DEV
+                      ? document.querySelector('body > main > main > main > ._console').appendChild(_messagetextnode)
+                      : false ;
+                }
+                
+                
+                
+                // const _messagetextnode = document.createTextNode(_message);
+                // if (!eventType.includes('error') && !eventType.includes('pointer') && !eventType.includes('wheel') && !eventType.includes('mouse') && !eventType.includes('device') && !eventType.includes('scroll')) {
+                //   document.querySelector('body > main > main > main > ._console').innerHTML += `- headerbody:debug:${eventType}`;
+                // }
+                
+              }, useCapture = true);
+            } catch (e) {
+              console.log("error in a try catch, you can ignore.")
+            }
+          }
+      }
+    }
+  }
+  try {
+    // loop on childNodes
+    const _loop = (node) => {
+        _handle_event_restriction(node);
+        
+        if (node.shadowRoot) {
+          _loop(node.shadowRoot);
+        }
+        const nodes = node.childNodes;
+        if(nodes && nodes.length > 0){
+          for (let i = 0; i < nodes.length; i++){
+            _loop(nodes[i]);
+            if (node instanceof Document && (i == nodes.length-1)) {
+              // if Window.prototype.dispatchEvent is nulled (maybe)
+              //Navigo doc: If there is a `popstate` event dispatched (this happens when the user manually changes the browser location by hitting for example the back button)
+              window.addEventListener('popstate', (event) => {
+                  event.preventDefault(); event.stopPropagation();
+                  if (!event.isTrusted) { return false }
+                  try {
+                    window.router_resolve();
+                  } catch (e) {}
+              }, useCapture = true);
+              
+              for (const el of [window, document, document.documentElement, document.head, document.body]) {
+                el.addEventListener = 'undefinednotinkeepfn'
+              }
+              _state.done = true ; // last child is body script
+            }
+          }
+        }
+    }
+    //
+    _loop(window);
+    _loop(document);
+  } catch (e) {}
 }
 
 
@@ -314,7 +408,7 @@ const _handle_copy_button = (event) => {
       __body_ui.global_ui_vars.copy.button = false ;
     }
     const _button = document.querySelector('body > button').cloneNode(deep = false);
-    _button.innerHTML = 'COPY';
+    //_button.innerHTML = 'COPY';
     _button.classList.add('copy');
     _button.addEventListener('click', (event_button) => {
       event_button.preventDefault(); event_button.stopPropagation();

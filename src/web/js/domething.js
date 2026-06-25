@@ -1,18 +1,17 @@
 
-const __header = require('./header');
+//const __header = require('./header');
 
 const _state = {
   done: {
     cleanup_prototypes: false,
     cleanup_elements: false,
-    lock_prototypes: true
+    lock_prototypes: false
   }
 };
 exports.get_state = () => { return _state; }
 
-const _keep_fn_prototypes = [ // keep getAttribute (navigo)
-    "addEventListener", "removeEventListener", "insertBefore", "remove", "querySelectorAll", "querySelector", "appendChild", "createTextNode", "remove", "getAttribute", "cloneNode", "createRange", "focus"
-  ];
+
+
 exports.cleanup_prototypes = () => {
     const _prototypes = {
         'HTMLElement': HTMLElement,
@@ -20,12 +19,25 @@ exports.cleanup_prototypes = () => {
         'Node': Node,
         'EventTarget': EventTarget,
         'Document': Document,
-        'Window': Window
+        'Window': Window,
+        'Navigator': Navigator
+    }
+    for (let _instancename in _prototypes) {
+      for (let property of ['innerHTML', 'outerHTML']) {
+        if (Object.hasOwn(_prototypes[_instancename].prototype, property)) {
+          Object.defineProperty(_prototypes[_instancename].prototype, property, {
+            get: Object.getOwnPropertyDescriptor(_prototypes[_instancename].prototype, property).get,
+            set: (value) => { return false },
+            configurable: false,
+            enumerable: true
+          });
+        }
+      }
     }
     let _loop_on_last = false ;
     for (let _instancename in _prototypes) {
         for (let key in _prototypes[_instancename].prototype) {
-            if (!_keep_fn_prototypes.includes(key)) {
+            if (!require('./domkeep').keep.functions['prototype'].includes(key)) {
               //&& (typeof _prototypes[_instancename].prototype[key] == 'function')  illegal invocation
                 try {
                     //console.log(`${_instancename}:${key}`);
@@ -43,11 +55,6 @@ exports.cleanup_prototypes = () => {
     }
 }
 
-
-const _always_keep_fn = [
-  "getAttribute" // navigo
-  , "remove"
-];
     
 exports.keep_fn = (nodes_array, functions_array) => {
   for (let i_node = 0; i_node <= nodes_array.length-1; i_node++) {
@@ -80,13 +87,12 @@ exports.keep_fn = (nodes_array, functions_array) => {
 
 // HERE just keep what is needed
 const insert_keep_fn = () => {
-  const is_foostack_dev = document.querySelector('head > style') ? false : true ;
-  if (is_foostack_dev) {
+  if (require('./body').IS_FOOSTACK_DEV) {
       this.keep_fn(['window'], ["console"]);
   }
-  // keep header.js updated with window and document keep_fn !!
-  this.keep_fn(['window'], __header.keep_fn['window']);
-  this.keep_fn(['document'], __header.keep_fn['document']);
+  // keep domkeep.js updated with window and document keep_fn !!
+  this.keep_fn(['window'], require('./domkeep').keep.functions['window']);
+  this.keep_fn(['document'], require('./domkeep').keep.functions['document']);
   // navigator TODO
   this.keep_fn([
     'body > main > main > main > ._main',
@@ -119,11 +125,15 @@ exports.cleanup_elements = (el = false) => {
         // KEEP node._keep_fn content
         for (let key in node) {
           if (typeof node[key] == 'function') {
-            if ( ( !Object.keys(node).includes('_keep_fn') || (Object.keys(node).includes('_keep_fn') && !node._keep_fn.includes(key)) ) && !_always_keep_fn.includes(key)) {
-                try {
-                  //console.log(`${node.tagName}:${key}`);
-                  node[key] = 'undefinednotinkeepfn';
-                } catch (e) {}
+            if (!require('./domkeep').keep.functions['always'].includes(key)) {
+              if ( ( !Object.keys(node).includes('_keep_fn') || (Object.keys(node).includes('_keep_fn') && !node._keep_fn.includes(key)) )) {
+                  try {
+                    //console.log(`${node.tagName}:${key}`);
+                    if (node[key] != 'undefinedprototype') {
+                      node[key] = 'undefinednotinkeepfn';
+                    }
+                  } catch (e) {}
+              }
             }
           }
         }

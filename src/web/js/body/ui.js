@@ -47,7 +47,8 @@ exports.page_main_add = (page, text, details = '', details_as_text_node = false,
     details_el.classList.add(`background-color-${background_color}-05`);
   }
   
-  text_el.innerHTML = text;
+  const text_textnode = document.createTextNode(text);
+  text_el.appendChild(text_textnode);
   p_el.appendChild(text_el);
   if (details_as_text_node) {
     details_el.classList.add('text_node');
@@ -55,7 +56,8 @@ exports.page_main_add = (page, text, details = '', details_as_text_node = false,
       document.createTextNode(details)
     )
   } else {
-    details_el.innerHTML = details;
+    const details_textnode = document.createTextNode(details);
+    details_el.appendChild(details_textnode);
   }
   p_el.appendChild(details_el);
   const page_el = document.querySelector(`body > main > main > main > .${page}`);
@@ -67,7 +69,8 @@ exports.new_html_element = (tagname, content = false, classlist = [], keep_fn = 
   el.classList.add(...classlist);
   if (content) {
     if (typeof content == 'string') {
-      el.innerHTML = content;
+      const content_textnode = document.createTextNode(content);
+      el.appendChild(content_textnode);
     } else {
       for (let _el of content) {
         el.appendChild(_el);
@@ -150,15 +153,9 @@ const _state = {
 exports.get_state = () => { return _state; }
 
 exports.init = () => {
-    // start panels opens to have the scrollable width of elements
-    document.querySelector('body > main > main > main').innerHTML += '\
-        <div class="_main page displaynone"></div> \
-        <div class="_console page displaynone"></div> \
-        <div class="_connection page displaynone"></div> \
-        ';
     
     // used to display on DEV but not on PROD: (console is removed by webpack)
-    if (require('../header').IS_FOOSTACK_DEV) {
+    if (require('../body').IS_FOOSTACK_DEV) {
         this.notification_add('Running foostack as dev mode', 'icon-slash-square', background_color = 'yellow');
         window.console = { // !! AFTER: _document_set_body_pages()
             _is_custom: true,
@@ -213,7 +210,7 @@ exports.init = () => {
       //console.log(document.body.clientHeight, 'document.body.clientHeight');
     //});
     
-
+    //_document_bind_vertical_as_horizontal(['body > main > aside > header > nav']);
 
     const stateCheck_body_ui_init_ = window.setInterval(() => {
       if (_state.done._document_asides_panels_toggle && _state.done._document_bind_vertical_as_horizontal && _state.done._document_init_scroll_right && _state.done._document_theme_toggle && _state.done._document_media_queries && _state.done._document_set_mixed_colors && _state.done._document_set_subfooter_textarea) {
@@ -405,7 +402,7 @@ const _document_asides_panels_toggle = () => {
 
 // .scroll-vertical-as-horizontal
 const _document_bind_vertical_as_horizontal = (elements_array) => {
-    /*
+    
     const _horizontal_scrollable_nav = elements_array ? elements_array : [
         "body > header > aside > nav",
         "body > header > main > nav",
@@ -426,12 +423,11 @@ const _document_bind_vertical_as_horizontal = (elements_array) => {
         if (!event.isTrusted) { return false }
         if (!event.deltaY) { return; }
         event.currentTarget.scrollLeft += event.deltaY + event.deltaX;
-        event.preventDefault();
     };
     for (const element of document.querySelectorAll(_horizontal_scrollable_nav.join(","))) {
-        element.removeEventListener('wheel', _bind_vertical_as_horizontal); // if it's a re-call
+        //element.removeEventListener('wheel', _bind_vertical_as_horizontal); // if it's a re-call
         element.addEventListener('wheel', _bind_vertical_as_horizontal, useCapture = false);
     }
-    */
+    
     _state.done._document_bind_vertical_as_horizontal = true ;
 }
