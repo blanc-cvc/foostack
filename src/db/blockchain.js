@@ -249,7 +249,6 @@ exports.sync_chain = async (callback_data) => {
                             ;
                             
                             if (_index_server >= 0) {
-                              __controllers_socketio_s2s.ban_and_or_try_disconnect(reason = "BAD_BLOCK", _index_server, socket = false, ban = true);
                             
                               // loop on firstlast 
                               for (let index = 0; index < __db_memory.db.blockchains[callback_data.chain].firstlast.all.length; index++) {
@@ -268,6 +267,9 @@ exports.sync_chain = async (callback_data) => {
                                   index--;
                                 }
                               } // end for loop grouped
+
+                              __controllers_socketio_s2s.ban_and_or_try_disconnect(reason = "BAD_BLOCK", _index_server, socket = false, ban = true);
+
                             } else if (_index_server === -1) {
                               // undefined ban thing bad callback and bad last_response_block from trusted
                             }
@@ -443,6 +445,7 @@ exports.sync_chain = async (callback_data) => {
 //don't try to verify chain until firstlast array done inside sync_chain function
 exports.verify_chain = (chain) => {
   // remove read() TODO
+    let is_sync_chain_called = false;
     const _last_block = this.blockchains[chain].read().last().value();
     if (_last_block.block > 0) {
         for (let index = 1; index <= _last_block.block; index++) {
@@ -450,22 +453,30 @@ exports.verify_chain = (chain) => {
             const _block = this.blockchains[chain].read().find({ block: index }).value();
             const _prev_block = this.blockchains[chain].read().find({ block: index-1 }).value();
             const _prev_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_prev_block)).digest('base64');
-            if (!_block || (_block.prev != _prev_hash)) {
+            if (!_block || (_block.prev != _prev_hash) || (_block.chain != chain)) {
                 for (let i = index; i <= _last_block.block; i++) {
                   if (i > 0) {
                     this.blockchains[chain].remove({ block: i }).write();
                   }
                 }
                 if (__db_memory.db.blockchains[chain].firstlast.all.length > 0) {
+                    is_sync_chain_called = true;
                     this.sync_chain({ blockchain_method: 'get_block', callback: 'sync_chain', chain: chain, block: !_block ? index : index-1, response: { block: !_block ? index : index-1, prev: "" } });
                 } else {
+                    is_sync_chain_called = true;
                     this.sync_chain({ chain: chain });
                 }
                 break;
             }
+            if (_last_block.block == index) {
+              __db_memory.db.blockchains[chain].is_blockchain_sync = false;
+            }
         }
-        console.log('\n  => Chain is verified !');
-        __db_memory.db.blockchains[chain].is_blockchain_sync = false;
+    } else {
+      __db_memory.db.blockchains[chain].is_blockchain_sync = false;
+    }
+    if (!is_sync_chain_called) {
+      console.log('\n  => Chain is verified !');
     }
 }
 

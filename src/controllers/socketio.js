@@ -126,26 +126,31 @@ const handle_data = async (data, socket, index) => {
               console.log(data);
               const openpgp = require('openpgp');
               // exceptions TODO
-              
-              const _signed = await openpgp.readCleartextMessage({ cleartextMessage: Buffer.from(data.signed_seed, 'base64').toString() });
-              const _json_login_data_signed = JSON.parse(_signed.text); _json_login_data_signed.err = {};
-              const _json_data_openpgp_pub_obj = await openpgp.readKey({ armoredKey: Buffer.from(_json_login_data_signed.pub, 'base64').toString() });
-              
-              const _verify_result_clear = await openpgp.verify({ message: _signed, verificationKeys: _json_data_openpgp_pub_obj });
-              try { await _verify_result_clear.signatures[0].verified } catch (e) { _json_login_data_signed.err.signature_clear = `clear: Signature could not be verified: ${e.message}` }
-              if (!Object.keys(_json_login_data_signed.err).length) {
-                  if (_json_login_data_signed.seed === __db_memory.db.webpeers[index].login.seed) {
-                      __db_memory.db.webpeers[index].login.pub = _json_login_data_signed.pub;
-                      console.log(__db_memory.db.webpeers[index]);
-                      // => { login: 'connected' }
-                      delete data.signed_seed;
-                      const _response = Object.assign(data, { response: 'connected' });
-                      socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _response, __db_memory.db.webpeers[index].pub));
-                  } else {
-                      __db_memory.db.del.webpeer.index(index);
-                  }
-              } else {
-                  __db_memory.db.del.webpeer.index(index);
+              try {
+                const _signed = await openpgp.readCleartextMessage({ cleartextMessage: Buffer.from(data.signed_seed, 'base64').toString() });
+                const _json_login_data_signed = JSON.parse(_signed.text); _json_login_data_signed.err = {};
+                const _json_data_openpgp_pub_obj = await openpgp.readKey({ armoredKey: Buffer.from(_json_login_data_signed.pub, 'base64').toString() });
+                
+                
+                
+                const _verify_result_clear = await openpgp.verify({ message: _signed, verificationKeys: _json_data_openpgp_pub_obj });
+                try { await _verify_result_clear.signatures[0].verified } catch (e) { _json_login_data_signed.err.signature_clear = `clear: Signature could not be verified: ${e.message}` }
+                if (!Object.keys(_json_login_data_signed.err).length) {
+                    if (_json_login_data_signed.seed === __db_memory.db.webpeers[index].login.seed) {
+                        __db_memory.db.webpeers[index].login.pub = _json_login_data_signed.pub;
+                        console.log(__db_memory.db.webpeers[index]);
+                        // => { login: 'connected' }
+                        delete data.signed_seed;
+                        const _response = Object.assign(data, { response: 'connected' });
+                        socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _response, __db_memory.db.webpeers[index].pub));
+                    } else {
+                        __db_memory.db.del.webpeer.index(index);
+                    }
+                } else {
+                    __db_memory.db.del.webpeer.index(index);
+                }
+              } catch (error) {
+                console.log(error);
               }
             } else {
               const _seed = __utils_crypto.misc.generate.seed(50, 100, 'base64');

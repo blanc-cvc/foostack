@@ -84,7 +84,7 @@ exports.init = () => {
                     this.clean_server_sockets();
                     console.log(`\n ..sockets cleaned and socketio connection listener removed, waiting to generate new uuid and new openpgp keys`);
                     setTimeout(async () => {
-                        __server.generate_new_uuid();
+                        __server.generate_new_uuid(); // because of this, until the first connection is done, it can cause problems with sid or uuid (and bans)
                         await __server.generate_new_openpgp();
                         console.log(`\n ..new uuid and new openpgp keys generated, waiting to add socketio connection listener and populate peers[]`);
                         setTimeout(() => {
@@ -237,8 +237,10 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
 
                 const is_server_blacklisted = __db_memory.db.get.peer.is_blacklisted(_deserialized.server, _deserialized.port);
                 if (is_server_blacklisted) {
-                  this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_SERVER", index, socket, ban = false); return;
-                } // not displaying port
+                  if (process.env.FOOSTACK_DEV == "true") {
+                    this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_SERVER", index, socket, ban = false); return;
+                  }
+                } // not displaying port - then don't use it in dev mode
                 
                 const _is_default_peer = __db_memory.db.get.peer.is_default_peer(_deserialized.server, _deserialized.port);
                 const _index = __db_memory.db.get.peer.index_server(_deserialized.server, _deserialized.port);
