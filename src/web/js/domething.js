@@ -1,5 +1,5 @@
 
-//const __header = require('./header');
+// used by socketio as Worker too, require() the minimum
 
 const _state = {
   done: {
@@ -79,7 +79,7 @@ exports.keep_fn = (nodes_array, functions_array) => {
           add_keep_fn(node);
         }
       } catch (e) {
-        require('./body/ui').page_main_add('_console', 'keep_fn error', nodes_array[i_node]);
+        //require('./body/ui').page_main_add('_console', 'keep_fn error', nodes_array[i_node]);
       }
     }
   }
@@ -87,9 +87,6 @@ exports.keep_fn = (nodes_array, functions_array) => {
 
 // HERE just keep what is needed
 const insert_keep_fn = () => {
-  if (require('./body').IS_FOOSTACK_DEV) {
-      this.keep_fn(['window'], ["console"]);
-  }
   // keep domkeep.js updated with window and document keep_fn !!
   this.keep_fn(['window'], require('./domkeep').keep.functions['window']);
   this.keep_fn(['document'], require('./domkeep').keep.functions['document']);

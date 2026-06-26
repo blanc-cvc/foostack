@@ -63,12 +63,12 @@ const stateCheck_complete = window.setInterval(() => {
                   this.worker_socketio.addEventListener('messageerror', (e) => {
                     event.preventDefault(); event.stopPropagation();
                     if (!event.isTrusted) { return false }
-                    page_main_add('_console', 'onmessageerror_socketio', e);
+                    __body_ui.page_main_add('_console', 'onmessageerror_socketio', e);
                   }, useCapture = false);
                   this.worker_socketio.addEventListener('error', (e) => {
                     event.preventDefault(); event.stopPropagation();
                     if (!event.isTrusted) { return false }
-                    page_main_add('_console', 'onerror_socketio (worker)', e);
+                    __body_ui.page_main_add('_console', 'onerror_socketio (worker)', e);
                   }, useCapture = false);
                 } else {
                   __body_ui.notification_add("Browser doesn't support Workers ! UI is freezing", 'icon-danger');
@@ -174,8 +174,12 @@ exports.check_html_resources = () => {
 }
 
 const onmessage_common_socketio = (data) => {
-  __body_ui.page_main_add('_connection', 'onmessage_common_socketio', data);
   if ((typeof data == 'object') && Object.keys(data).includes('on')) {
+    __body_ui.page_main_add(Object.keys(data).includes('deserialized_data')
+      ? Object.keys(data.deserialized_data).includes('path')
+        ? data.deserialized_data.path.replace('/','_')
+        : '_console'
+      : '_console' , 'onmessage_common_socketio', data);
     switch (data.on) {
       case "set":
         switch (data.name) {

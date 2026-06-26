@@ -152,6 +152,19 @@ const _state = {
 };
 exports.get_state = () => { return _state; }
 
+
+const post_bottominput_socketio = () => {
+  const _textarea_el = document.querySelector('body > main > main > footer > nav > section > textarea');
+  const _textarea_el_value = _textarea_el.value.replace(/\n/g, '');
+  require('../body.js').postMessage_socketio({ origin: 'ui_footer_input_send', data: _textarea_el_value });
+  if ((window.location.pathname != '') && (window.location.pathname != '/')) {
+    this.page_main_add(window.location.pathname.replace('/','_'), 'text input', _textarea_el_value)
+  }
+  _textarea_el.value = '';
+  _textarea_el.style.height = "var(--default-text-size)"
+  document.querySelector('body > main > main > footer').classList.remove('stick-bottom');
+}
+
 exports.init = () => {
     
     // used to display on DEV but not on PROD: (console is removed by webpack)
@@ -184,13 +197,7 @@ exports.init = () => {
     _document_set_subfooter_textarea();
     
     document.querySelector('body > main > main > footer > nav > section > button').addEventListener('click', (event) => {
-      const _textarea_el = document.querySelector('body > main > main > footer > nav > section > textarea');
-      // data: { origin: 'ui_footer_input_send', data: _data, path: window.location.pathname }
-      require('../body.js').postMessage_socketio({ origin: 'ui_footer_input_send', data: _textarea_el.value });
-      if ((window.location.pathname != '') && (window.location.pathname != '/')) {
-        this.page_main_add(window.location.pathname.replace('/','_'), 'text input', _textarea_el.value)
-      }
-      _textarea_el.value = '';
+      post_bottominput_socketio();
     });
     
     
@@ -202,15 +209,7 @@ exports.init = () => {
     }
     gen_login_auto_user_openpgpcreds();
     */
-    // not as expected on firefox mobile when focusing textarea
-    //window.addEventListener('resize', function(event) {
-      //console.log(window.screen.height, 'window.screen.height');
-      //console.log(window.outerHeight, 'window.outerHeight');
-      //console.log(window.innerHeight, 'window.innerHeight');
-      //console.log(document.body.clientHeight, 'document.body.clientHeight');
-    //});
-    
-    //_document_bind_vertical_as_horizontal(['body > main > aside > header > nav']);
+   
 
     const stateCheck_body_ui_init_ = window.setInterval(() => {
       if (_state.done._document_asides_panels_toggle && _state.done._document_bind_vertical_as_horizontal && _state.done._document_init_scroll_right && _state.done._document_theme_toggle && _state.done._document_media_queries && _state.done._document_set_mixed_colors && _state.done._document_set_subfooter_textarea) {
@@ -226,6 +225,21 @@ const _document_set_subfooter_textarea = () => {
     const _footer_el = document.querySelector('body > main > main > footer');
     const _textarea_el = document.querySelector('body > main > main > footer > nav > section > textarea');
     
+    _textarea_el.addEventListener('keyup', (event) => {
+      event.preventDefault(); event.stopPropagation();
+      if (!event.isTrusted) { return false }
+      if (event.key == "Enter") {
+        let bool = true;
+        bool = bool && ('shiftKey' in event ? !event.shiftKey : true) ;
+        bool = bool && ('ctrlKey' in event ? !event.ctrlKey : true) ;
+        bool = bool && ('altKey' in event ? !event.altKey : true) ;
+        bool = bool && ('metaKey' in event ? !event.metaKey : true) ;
+        if (bool) {
+          post_bottominput_socketio();
+        }
+      }
+    }, useCapture = false);
+
     // add stick-bottom class to subfooter => making changes only at media (max-width: 720px)
     _textarea_el.addEventListener('focus', (event) => {
       event.preventDefault(); event.stopPropagation();

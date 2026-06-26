@@ -4,6 +4,26 @@ const { serialize, deserialize } = require('../../../common/network');
 const _location = typeof document !== ('undefined'||null) ? '' : `${location.origin}`;
 const client = { uuid: false, openpgpcreds: false, serverpub: false, socket: false, login_auto_user_openpgpcreds: false, login_user_openpgpcreds: { seed: false, pub: false, signed_seed: false } }
 
+// if true i'm a worker
+if (typeof document !== "undefined") {
+  const __domething = require('../domething');
+  const keep_fn = require('../domkeep').keep.functions;
+  for (const el of [navigator, self]) {
+    const _keep_fn = el instanceof WorkerGlobalScope ? keep_fn['window'] : [];
+    for (let key in el) {
+      if ((typeof el[key] == 'function') && !_keep_fn.includes(key)) {
+        try {
+          el[key] = 'undefinednotinkeepfn';
+        } catch (e) {}
+      }
+    }
+  }
+  __domething.cleanup_prototypes();
+  __domething.cleanup_elements();
+  __domething.lock_prototypes();
+}
+
+
 const gen_login_auto_user_openpgpcreds = async () => {
   client.login_auto_user_openpgpcreds = await require('../../../common/crypto').openpgp.generate('user', 'user@test.local');
 }
@@ -85,7 +105,7 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
   // onmessage_common_e is an object event containing data (as worker)
   //                    is an object just containing data (as callback)
   
-  if (typeof document !== ('undefined'||null)) {
+  if (typeof document !== "undefined") {
       postMessage = onmessage_common_cb_fn;
   } // if i'm not a worker postMessage is a callback
   
