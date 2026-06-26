@@ -4,8 +4,9 @@ const { serialize, deserialize } = require('../../../common/network');
 const _location = typeof document !== ('undefined'||null) ? '' : `${location.origin}`;
 const client = { uuid: false, openpgpcreds: false, serverpub: false, socket: false, login_auto_user_openpgpcreds: false, login_user_openpgpcreds: { seed: false, pub: false, signed_seed: false } }
 
-// if true i'm a worker
-if (typeof document !== "undefined") {
+// if i'm a worker
+//if (typeof document === "undefined") {
+if (false) {
   const __domething = require('../domething');
   const keep_fn = require('../domkeep').keep.functions;
   for (const el of [navigator, self]) {
@@ -118,6 +119,17 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
 
       if (client.login_user_openpgpcreds.seed && !client.login_user_openpgpcreds.pub) {
         const _askSigned = async () => {
+          try {
+            const mess = await openpgp.createMessage({ text: 'test' });
+            const keypub = await openpgp.readKey({ armoredKey: onmessage_common_e.data.data });
+            // const userpub = await openpgp.encrypt({
+            // message: mess,
+            // encryptionKeys: keypub
+            // });
+          } catch (e) {
+            //postMessage({ on: 'set', name: 'pub', err: e, _err: 'pub (user) not valid' });
+            //return;
+          }
           const _serialize_test = await serialize(client.uuid, client.openpgpcreds, 'test', Buffer.from(onmessage_common_e.data.data).toString('base64')) ;
           if ((typeof _serialize_test == 'object') && Object.keys(_serialize_test).includes('err')) {
             postMessage({ on: 'set', name: 'pub', err: 'pub not valid' });
