@@ -22,7 +22,7 @@
 exports.keep = {
     functions: {
         'prototype': ['addEventListener', 'removeEventListener', 'insertBefore', 'remove', 'querySelectorAll', 'querySelector', 'appendChild', 'createTextNode', 'remove', 'getAttribute', 'cloneNode', 'createRange', 'focus'],
-        'window': ["clearInterval", "clearTimeout", "getComputedStyle", "matchMedia", "setInterval", "setTimeout", "getSelection", "onmessage", "postMessage", "btoa", "Promise"], // atob, TextEncoder, TextDecoder
+        'window': ['clearInterval', 'clearTimeout', 'getComputedStyle', 'matchMedia', 'setInterval', 'setTimeout', 'getSelection', 'onmessage', 'postMessage', 'atob', 'btoa', 'Promise'], // TextEncoder, TextDecoder
         'document': ['createTextNode', 'querySelector', 'querySelectorAll', 'createRange'],
         'always': ['getAttribute', 'remove']
     },

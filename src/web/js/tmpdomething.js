@@ -11,42 +11,20 @@ const _state = {
 exports.get_state = () => { return _state; }
 
 
-//let _keepfunctions = [];
-//const _keepfunctionsexclude = ['getComputedStyle', 'matchMedia', 'addEventListener', 'removeEventListener', 'insertBefore', 'remove', 'querySelectorAll', 'querySelector', 'appendChild', 'createTextNode', 'remove', 'getAttribute', 'cloneNode', 'createRange', 'focus'];
-// all keep.functions
-//for (let key in require('./domkeep').keep.functions) {
-//  for (let func of require('./domkeep').keep.functions[key]) {
-//    if (!_keepfunctionsexclude.includes(func)) {
-//      _keepfunctions.push(func);
-//    }
-//  }
-//}
-let _mixed_keep_window_document = [];
-for (let key of [ 'window', 'document' ]) {
-  for (let func of require('./domkeep').keep.functions[key]) {
-    _mixed_keep_window_document.push(func);
-  }
-}
-
-
 
 exports.cleanup_prototypes = () => {
-    // keep 'Window': ... at the bottom of _prototypes
     const _prototypes = {
-        'DedicatedWorkerGlobalScope': (typeof DedicatedWorkerGlobalScope !== 'undefined') ? DedicatedWorkerGlobalScope : undefined,
-        'SharedWorkerGlobalScope': (typeof SharedWorkerGlobalScope !== 'undefined') ? SharedWorkerGlobalScope : undefined,
-        'ServiceWorkerGlobalScope': (typeof ServiceWorkerGlobalScope !== 'undefined') ? ServiceWorkerGlobalScope : undefined,
-        'WorkerNavigator': (typeof WorkerNavigator !== 'undefined') ? WorkerNavigator : undefined,
-        'HTMLElement': (typeof HTMLElement !== 'undefined') ? HTMLElement : undefined,
-        'Element': (typeof Element !== 'undefined') ? Element : undefined,
-        'Node': (typeof Node !== 'undefined') ? Node : undefined,
-        'EventTarget': (typeof EventTarget !== 'undefined') ? EventTarget : undefined,
-        'Document': (typeof Document !== 'undefined') ? Document : undefined,
-        'Navigator': (typeof Navigator !== 'undefined') ? Navigator : undefined,
-        'Window': (typeof Window !== 'undefined') ? Window : (typeof WorkerGlobalScope !== 'undefined') ? WorkerGlobalScope : undefined
+        'HTMLElement': HTMLElement,
+        'Element': Element,
+        'Node': Node,
+        'EventTarget': EventTarget,
+        'Document': Document,
+        'Window': Window,
+        'Navigator': Navigator,
+        'WorkerGlobalScope': WorkerGlobalScope
     }
     for (let _instancename in _prototypes) {
-      if ((typeof _prototypes[_instancename] !== 'undefined') && _prototypes[_instancename].prototype) {
+      if (typeof _prototypes[_instancename] !== 'undefined') {
         for (let property of ['innerHTML', 'outerHTML']) {
           if (Object.hasOwn(_prototypes[_instancename].prototype, property)) {
             Object.defineProperty(_prototypes[_instancename].prototype, property, {
@@ -61,16 +39,8 @@ exports.cleanup_prototypes = () => {
     }
     let _loop_on_last = false ;
     for (let _instancename in _prototypes) {
-      if ((typeof _prototypes[_instancename] !== 'undefined') && _prototypes[_instancename].prototype) {
         for (let key in _prototypes[_instancename].prototype) {
-            // use all require('./domkeep').keep.functions
-            let _keep = []
-            if (typeof document === "undefined") { // if i'm a Worker, unused is done directly after at lock_prototypes()
-              _keep = _mixed_keep_window_document
-            } else { // i'm NOT a Worker, (dont keep large for Window and Document which is not invoked after..)
-              _keep = require('./domkeep').keep.functions['prototype'];
-            }
-            if (!_keep.includes(key)) {
+            if (!require('./domkeep').keep.functions['prototype'].includes(key)) {
               //&& (typeof _prototypes[_instancename].prototype[key] == 'function')  illegal invocation
                 try {
                     //console.log(`${_instancename}:${key}`);
@@ -85,7 +55,6 @@ exports.cleanup_prototypes = () => {
         if (_loop_on_last) {
           _state.done.cleanup_prototypes = true ;
         }
-      }
     }
 }
 
@@ -107,7 +76,13 @@ exports.keep_fn = (nodes_array, functions_array) => {
           }
         } else {
           const node = typeof nodes_array[i_node] == 'string'
-            ? nodes_array[i_node] == "window" ? window : nodes_array[i_node] == "document" ? document : document.querySelector(nodes_array[i_node])
+            ? nodes_array[i_node] == "self"
+              ? self
+              : nodes_array[i_node] == "window"
+                ? window
+                : nodes_array[i_node] == "document"
+                  ? document
+                  : document.querySelector(nodes_array[i_node])
             : nodes_array[i_node];
           
           add_keep_fn(node);
@@ -122,9 +97,9 @@ exports.keep_fn = (nodes_array, functions_array) => {
 // HERE just keep what is needed
 const insert_keep_fn = () => {
   // keep domkeep.js updated with window and document keep_fn !!
-  this.keep_fn(['window'], require('./domkeep').keep.functions['window']);
-  this.keep_fn(['document'], require('./domkeep').keep.functions['document']);
-  // navigator TODO
+  //(self !== 'undefined') && this.keep_fn(['self'], require('./domkeep').keep.functions['window']);
+  (window !== 'undefined') && this.keep_fn(['window'], require('./domkeep').keep.functions['window']);
+  (document !== 'undefined') && this.keep_fn(['document'], require('./domkeep').keep.functions['document']);
   this.keep_fn([
     'body > main > main > main > ._main',
     'body > main > main > main > ._console',
@@ -184,8 +159,9 @@ exports.cleanup_elements = (el = false) => {
     }
     //
     if (!el) {
-      _loop(window);
-      _loop(document);
+      (window !== 'undefined') && _loop(window);
+      (document !== 'undefined') && _loop(document);
+      //(self !== 'undefined') && _loop(self);
     } else {
       _loop(el);
     }
@@ -193,29 +169,20 @@ exports.cleanup_elements = (el = false) => {
 
 exports.lock_prototypes = () => {
   insert_keep_fn();
-  // keep 'Window': ... at the bottom of _prototypes
+  
   const _prototypes = {
-    'DedicatedWorkerGlobalScope': (typeof DedicatedWorkerGlobalScope !== 'undefined') ? DedicatedWorkerGlobalScope : undefined,
-    'SharedWorkerGlobalScope': (typeof SharedWorkerGlobalScope !== 'undefined') ? SharedWorkerGlobalScope : undefined,
-    'ServiceWorkerGlobalScope': (typeof ServiceWorkerGlobalScope !== 'undefined') ? ServiceWorkerGlobalScope : undefined,
-    'WorkerNavigator': (typeof WorkerNavigator !== 'undefined') ? WorkerNavigator : undefined,
-    'Document': (typeof Document !== 'undefined') ? Document : undefined,
-    'Window': (typeof Window !== 'undefined') ? Window : (typeof WorkerGlobalScope !== 'undefined') ? WorkerGlobalScope : undefined
+    'Document': Document,
+    'Window': Window,
+    'WorkerGlobalScope': WorkerGlobalScope
   }
   const _keep = {
-    'DedicatedWorkerGlobalScope': _mixed_keep_window_document,
-    'SharedWorkerGlobalScope': [],
-    'ServiceWorkerGlobalScope': [],
-    'WorkerNavigator': [],
-    'Document': require('./domkeep').keep.functions['document'],
-    'Window': require('./domkeep').keep.functions['window']
+    'Document': document._keep_fn,
+    'Window': window._keep_fn,
+    'WorkerGlobalScope': window._keep_fn
   }
   let _loop_on_last = false ;
   for (let _instancename in _prototypes) {
-    //if ((_instancename == 'Window') && (typeof document === "undefined") && (typeof _prototypes[_instancename] == 'function')) { // WorkerGlobalScope
-    //  break;
-    //}
-    if ((typeof _prototypes[_instancename] !== 'undefined') && _prototypes[_instancename].prototype) {
+    if (typeof _prototypes[_instancename] !== 'undefined') {
       for (let key in _prototypes[_instancename].prototype) {
         if (!_keep[_instancename].includes(key)) {
           try {
