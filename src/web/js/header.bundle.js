@@ -1,5 +1,5 @@
 (()=>{var __webpack_modules__={7860:(__unused_webpack_module,exports)=>{exports.a={functions:{"prototype":["addEventListener","removeEventListener","insertBefore","remove","querySelectorAll","querySelector","appendChild","createTextNode","remove","getAttribute","cloneNode","createRange","focus"],"window":["clearInterval","clearTimeout","getComputedStyle","matchMedia","setInterval","setTimeout","getSelection","onmessage","postMessage","atob","btoa","Promise"],"document":["createTextNode","querySelector","querySelectorAll","createRange"],"always":["getAttribute","remove"]},events:["popstate","click","beforeinput","touchstart","touchend","touchmove","touchcancel","pointerdown","pointerup","pointercancel","pointerout","pointerenter","mousedown","mouseup","mousecancel","mouseout","mouseenter","focus","focusout","select","selectstart","selectionchange","contextmenu","copy","paste","cut","keydown","keyup","keypress","input","change","wheel","mousewheel","scroll"]}}},__webpack_module_cache__={}
-document.documentElement.classList.remove("noscript")
+document.documentElement.classList.remove("noscript"),window.Worker=!1
 const keep_fn=function __webpack_require__(moduleId){var cachedModule=__webpack_module_cache__[moduleId]
 if(void 0!==cachedModule)return cachedModule.exports
 var module=__webpack_module_cache__[moduleId]={exports:{}}

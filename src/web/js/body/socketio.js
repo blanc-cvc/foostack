@@ -117,30 +117,30 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
       if (client.login_user_openpgpcreds.seed && !client.login_user_openpgpcreds.pub) {
         const _askSigned = async () => {
           try {
-            const mess = await openpgp.createMessage({ text: 'test' });
+            //const mess = await openpgp.createMessage({ text: 'test' });
             const keypub = await openpgp.readKey({ armoredKey: onmessage_common_e.data.data });
             // const userpub = await openpgp.encrypt({
             // message: mess,
             // encryptionKeys: keypub
             // });
           } catch (e) {
-            //postMessage({ on: 'set', name: 'pub', err: e, _err: 'pub (user) not valid' });
-            //return;
+            postMessage({ on: 'set', name: 'pub', err: onmessage_common_e.data.data, _err: 'pub (user) not valid' });
+            return;
           }
-          const _serialize_test = await serialize(client.uuid, client.openpgpcreds, 'test', Buffer.from(onmessage_common_e.data.data).toString('base64')) ;
+          const _serialize_test = await serialize(client.uuid, client.openpgpcreds, Buffer.from(onmessage_common_e.data.data).toString('base64'), client.serverpub) ;
           if ((typeof _serialize_test == 'object') && Object.keys(_serialize_test).includes('err')) {
-            postMessage({ on: 'set', name: 'pub', err: 'pub not valid' });
+            postMessage({ on: 'set', name: 'pub', test: JSON.stringify(_serialize_test), err: 'pub (client) not valid' });
             return;
           }
           client.login_user_openpgpcreds.pub = Buffer.from(onmessage_common_e.data.data).toString('base64');
-          const _message = { text: `{ "seed": "${client.login_user_openpgpcreds.seed}", "pub": "${client.login_user_openpgpcreds.pub}" }` };
-          const _unsigned = await openpgp.createCleartextMessage(_message);
-          postMessage({ on: 'set', name: 'pub', do: 'sign', message: _unsigned });
+          const _message = `{ "seed": "${client.login_user_openpgpcreds.seed}", "pub": "${client.login_user_openpgpcreds.pub}" }`;
+          //const _unsigned = await openpgp.createCleartextMessage(_message);
+          postMessage({ on: 'set', name: 'pub', do: 'sign', message: _message });
         }
         _askSigned();
         return;
       } else if (client.login_user_openpgpcreds.pub && !client.login_user_openpgpcreds.signed_seed) {
-        client.login_user_openpgpcreds.signed_seed = onmessage_common_e.data.data;
+        client.login_user_openpgpcreds.signed_seed = Buffer.from(onmessage_common_e.data.data).toString('base64');
         onmessage_common_e.data = Object.assign(onmessage_common_e.data, { signed_seed: client.login_user_openpgpcreds.signed_seed });
         onmessage_common_e.data.data = '/login';
       }

@@ -123,6 +123,15 @@ const stateCheck_complete = window.setInterval(() => {
                         print_edit_node(Navigator.prototype, 'Navigator.prototype');
                         print_edit_node(navigator, 'navigator');
                         print_edit_node(document.querySelector('body > button'), 'body > button');
+                        
+                        const testtest = {
+                          text: {
+                            seed: "seedseed",
+                            pub: "pubpub"
+                          }
+                        }
+                        console.log(testtest);
+                        
                       }
                     }, 0); // stateCheck_lock_prototypes
                   }
@@ -184,8 +193,9 @@ const onmessage_common_socketio = (data) => {
         switch (data.name) {
           case "pub":
             if (!Object.keys(data).includes('err')) {
+              console.log(data.message);
               __body_ui.page_main_add('_connection', '=========== SIGN:', 'sign the next message content (paste it in the input below and send it)');
-              __body_ui.page_main_add('_connection', '=========== MESSAGE:', data.message);
+              __body_ui.page_main_add('_connection', '=========== MESSAGE:', data.message, details_as_text_node = true);
             } else {
               __body_ui.page_main_add('_connection', '=========== OPENPGP PUBLIC KEY NOT VALID:', 'paste your openpgp public key (armored) in the input below and send it');
             }

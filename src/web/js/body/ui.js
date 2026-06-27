@@ -155,14 +155,18 @@ exports.get_state = () => { return _state; }
 
 const post_bottominput_socketio = () => {
   const _textarea_el = document.querySelector('body > main > main > footer > nav > section > textarea');
-  const _textarea_el_value = _textarea_el.value.replace(/\n/g, '');
+  const _textarea_el_value = _textarea_el.value;
+  _textarea_el.value = '';
+  _textarea_el.style.height = "var(--default-text-size)"
+  document.querySelector('body > main > main > footer').classList.remove('stick-bottom');
+  //const _textarea_el_value = (_textarea_el.value.includes('BEGIN PGP')
+  //  ? _textarea_el.value
+  //  : _textarea_el.value.replace(/\n/g, '');
+  
   require('../body.js').postMessage_socketio({ origin: 'ui_footer_input_send', data: _textarea_el_value });
   if ((window.location.pathname != '') && (window.location.pathname != '/')) {
     this.page_main_add(window.location.pathname.replace('/','_'), 'text input', _textarea_el_value)
   }
-  _textarea_el.value = '';
-  _textarea_el.style.height = "var(--default-text-size)"
-  document.querySelector('body > main > main > footer').classList.remove('stick-bottom');
 }
 
 exports.init = () => {
@@ -170,15 +174,15 @@ exports.init = () => {
     // used to display on DEV but not on PROD: (console is removed by webpack)
     if (require('../body').IS_FOOSTACK_DEV) {
         this.notification_add('Running foostack as dev mode', 'icon-slash-square', background_color = 'yellow');
-        window.console = { // !! AFTER: _document_set_body_pages()
-            _is_custom: true,
-            debug: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
-                this.page_main_add('_console', `console.debug: ${text}`, obj, details_as_text_node, background_color);
-            },
-            log: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
-                this.page_main_add('_console', `console.log: ${text}`, obj, details_as_text_node, background_color);
-            }
-        }
+        //window.console = { // !! AFTER: _document_set_body_pages()
+        //    _is_custom: true,
+        //    debug: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
+        //        this.page_main_add('_console', `console.debug: ${text}`, obj, details_as_text_node, background_color);
+        //    },
+        //    log: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
+        //        this.page_main_add('_console', `console.log: ${text}`, obj, details_as_text_node, background_color);
+        //    }
+        //}
     }
     
     if (!window.Worker) {
@@ -235,6 +239,7 @@ const _document_set_subfooter_textarea = () => {
         bool = bool && ('altKey' in event ? !event.altKey : true) ;
         bool = bool && ('metaKey' in event ? !event.metaKey : true) ;
         if (bool) {
+          _textarea_el.value = _textarea_el.value.slice(0, _textarea_el.value.lastIndexOf('\n'));
           post_bottominput_socketio();
         }
       }

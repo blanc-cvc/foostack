@@ -130,9 +130,6 @@ const handle_data = async (data, socket, index) => {
                 const _signed = await openpgp.readCleartextMessage({ cleartextMessage: Buffer.from(data.signed_seed, 'base64').toString() });
                 const _json_login_data_signed = JSON.parse(_signed.text); _json_login_data_signed.err = {};
                 const _json_data_openpgp_pub_obj = await openpgp.readKey({ armoredKey: Buffer.from(_json_login_data_signed.pub, 'base64').toString() });
-                
-                
-                
                 const _verify_result_clear = await openpgp.verify({ message: _signed, verificationKeys: _json_data_openpgp_pub_obj });
                 try { await _verify_result_clear.signatures[0].verified } catch (e) { _json_login_data_signed.err.signature_clear = `clear: Signature could not be verified: ${e.message}` }
                 if (!Object.keys(_json_login_data_signed.err).length) {
