@@ -29,7 +29,6 @@ exports.serialize = async (uuid, openpgpcreds, data, pub) => {
     
     } catch (exception) {
         return Object.assign(data, { err: { serialize: exception } });
-        //return { err: { serialize: 'exception' } };
     }
 }
 
@@ -82,8 +81,8 @@ exports.deserialize = async (openpgpcreds, serialized_data, openpgp_pub) => {
         return _json_data;
     
     } catch (exception) {
-        return Object.assign(_json_data, { err: { deserialize: exception } });
-        //return { err: { deserialize: exception } };
+        //return Object.assign(_json_data, { err: { deserialize: exception } });
+        return { err: { deserialize: exception } };
     }
 }
 

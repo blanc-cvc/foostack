@@ -248,3 +248,23 @@ exports.is_typeof_get_onlines_response = (deserialized_data) => {
   
   return _bool ;
 }
+
+// { "origin": "ui_footer_input_send", "data": "/login or /login_auto", "path": "/connection"     ?,"signed_seed": "" }
+exports.is_typeof_web_login = (data) => {
+  let _bool = true ;
+  if (typeof data == 'object') {
+    _data_object_keys = Object.keys(data);
+    _bool = _bool && _data_object_keys.includes('origin') && (typeof data.origin == 'string') && (data.origin == 'ui_footer_input_send');
+    _bool = _bool && _data_object_keys.includes('data') && (typeof data.data == 'string') && ((data.data == '/login') || (data.data == '/login_auto'));
+    _bool = _bool && _data_object_keys.includes('path') && (typeof data.path == 'string') && (data.path == '/connection');
+    if (!_data_object_keys.includes('signed_seed')) {
+      _bool = _bool && (_data_object_keys.length == 3) ;
+    } else {
+      _bool = _bool && (typeof data.signed_seed == 'string') ;
+      _bool = _bool && (_data_object_keys.length == 4) ;
+    }
+    
+  } else { _bool = false ; }
+  
+  return _bool ;
+}
