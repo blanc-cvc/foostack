@@ -2,7 +2,7 @@
 document.documentElement.classList.remove("noscript");
 
 // to test without worker
-window.Worker = false
+//window.Worker = false
 
 const keep_fn = require('./domkeep').keep.functions;
 

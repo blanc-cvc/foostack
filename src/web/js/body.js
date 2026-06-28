@@ -124,14 +124,6 @@ const stateCheck_complete = window.setInterval(() => {
                         print_edit_node(navigator, 'navigator');
                         print_edit_node(document.querySelector('body > button'), 'body > button');
                         
-                        const testtest = {
-                          text: {
-                            seed: "seedseed",
-                            pub: "pubpub"
-                          }
-                        }
-                        console.log(testtest);
-                        
                       }
                     }, 0); // stateCheck_lock_prototypes
                   }
@@ -161,17 +153,17 @@ exports.check_html_resources = () => {
           : ''
         : resource.href
           ? `${resource.href.split('/')[resource.href.split('/').length-1]}:[/]${resource.href.split('/').length-1}`
-          : ''}`
+          : ''}` ;
       ;
       const _is_jsheader = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsheader') && ( this.IS_FOOSTACK_DEV
         ? (resource.src && (resource.src.split('/')[3] == 'header.js'))
-        : !resource.src )
+        : !resource.src ) ;
       const _is_jsbody = (resource.tagName.toLowerCase() == 'script') && resource.id && (resource.id == 'jsbody') && ( this.IS_FOOSTACK_DEV
         ? (resource.src && (resource.src.split('/')[3] == 'body.js'))
-        : !resource.src )
+        : !resource.src ) ;
       const _is_style = (this.IS_FOOSTACK_DEV ? resource.tagName.toLowerCase() == 'link' : resource.tagName.toLowerCase() == 'style') && resource.id && (resource.id == 'style') && ( this.IS_FOOSTACK_DEV
         ? (resource.href && (resource.href.split('/')[3] == 'styles.css'))
-        : !resource.href )
+        : !resource.href ) ;
       if (!_is_jsheader && !_is_jsbody && !_is_style) {
         __body_ui.notification_add(`Unexpected loaded resource: ${_resource_details}`, 'icon-danger', background_color = 'red');
         __body_ui.page_main_add('_console', `Unexpected loaded resource: ${_resource_details}`, resource.innerHTML, details_as_text_node = true, background_color = 'red');
@@ -182,22 +174,25 @@ exports.check_html_resources = () => {
 }
 
 const onmessage_common_socketio = (data) => {
+  
+  __body_ui.page_main_add('_console' , 'onmessage_common_socketio', data);
+  
   if ((typeof data == 'object') && Object.keys(data).includes('on')) {
-    __body_ui.page_main_add(Object.keys(data).includes('deserialized_data')
-      ? Object.keys(data.deserialized_data).includes('path')
-        ? data.deserialized_data.path.replace('/','_')
-        : '_console'
-      : '_console' , 'onmessage_common_socketio', data);
+    //__body_ui.page_main_add(Object.keys(data).includes('deserialized_data')
+    //  ? Object.keys(data.deserialized_data).includes('path')
+    //    ? data.deserialized_data.path.replace('/','_')
+    //    : '_console'
+    //  : '_console' , 'onmessage_common_socketio', data) ;
+    
     switch (data.on) {
       case "set":
         switch (data.name) {
           case "pub":
             if (!Object.keys(data).includes('err')) {
-              console.log(data.message);
-              __body_ui.page_main_add('_connection', '=========== SIGN:', 'sign the next message content (paste it in the input below and send it)');
+              __body_ui.page_main_add('_connection', '=========== SIGN:', 'sign the next message content (paste it in the input below and send it)', details_as_text_node = false, background_color = 'blue');
               __body_ui.page_main_add('_connection', '=========== MESSAGE:', data.message, details_as_text_node = true);
             } else {
-              __body_ui.page_main_add('_connection', '=========== OPENPGP PUBLIC KEY NOT VALID:', 'paste your openpgp public key (armored) in the input below and send it');
+              __body_ui.page_main_add('_connection', '=========== OPENPGP PUBLIC KEY NOT VALID:', 'paste your openpgp public key (armored) in the input below and send it', details_as_text_node = false, background_color = 'red');
             }
             break;
         }
@@ -213,14 +208,16 @@ const onmessage_common_socketio = (data) => {
         if (data.deserialized_data) {
           if (typeof data.deserialized_data.response == 'object') {
             if ((data.deserialized_data.data == '/login') && Object.keys(data.deserialized_data.response).includes('seed')) {
-              __body_ui.page_main_add('_connection', '=========== OPENPGP PUBLIC KEY:', 'paste your openpgp public key (armored) in the input below and send it');
+              __body_ui.page_main_add('_connection', '=========== OPENPGP PUBLIC KEY:', 'paste your openpgp public key (armored) in the input below and send it', details_as_text_node = false, background_color = 'blue');
             }
           } else {
             switch (data.deserialized_data.response) {
               case "connected":
+                __body_ui.page_main_add('_connection' , '=========== CONNECTED', data, details_as_text_node = false, background_color = 'green');
                 document.querySelector("body > footer > aside.right > button > i").classList.replace("icon-color-blue", "icon-color-green");
                 break;
               case "disconnected":
+                __body_ui.page_main_add('_connection' , '=========== DISCONNECTED', data, details_as_text_node = false, background_color = 'purple');
                 document.querySelector("body > footer > aside.right > button > i").classList.replace("icon-color-green", "icon-color-blue");
                 break;
             }

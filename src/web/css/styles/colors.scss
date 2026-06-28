@@ -2,11 +2,11 @@
 // for: global colors
 // modifier: html.theme-light .color-
 
-
 .color-purple { color: rgb(var(--default-rgb-purple)); }
 .color-blue { color: rgb(var(--default-rgb-blue)); }
 .color-green { color: rgb(var(--default-rgb-green)); }
 .color-yellow { color: rgb(var(--default-rgb-yellow)); }
+.color-pink { color: rgb(var(--default-rgb-pink)); }
 .color-orange { color: rgb(var(--default-rgb-orange)); }
 .color-red { color: rgb(var(--default-rgb-red)); }
 .background-color-purple { background-color: rgb(var(--default-rgb-purple)); }
@@ -16,11 +16,14 @@
 .background-color-blue-10 { color: #FFF !important; background-color: rgb(var(--default-rgb-blue)) !important; }
 .background-color-blue-05 { color: #FFF !important; background-color: rgba(var(--default-rgb-blue), 0.5) !important; }
 .background-color-green { background-color: rgb(var(--default-rgb-green)); }
-.background-color-green-10 { color: #FFF !important; background-color: rgb(var(--default-rgb-green)) !important; }
-.background-color-green-05 { color: #FFF !important; background-color: rgba(var(--default-rgb-green), 0.5) !important; }
+.background-color-green-10 { color: #000 !important; background-color: rgb(var(--default-rgb-green)) !important; }
+.background-color-green-05 { color: #000 !important; background-color: rgba(var(--default-rgb-green), 0.5) !important; }
 .background-color-yellow { background-color: rgb(var(--default-rgb-yellow)); }
 .background-color-yellow-10 { color: #000 !important; background-color: rgb(var(--default-rgb-yellow)) !important; }
 .background-color-yellow-05 { color: #000 !important; background-color: rgba(var(--default-rgb-yellow), 0.5) !important; }
+.background-color-pink { background-color: rgb(var(--default-rgb-pink)); }
+.background-color-pink-10 { color: #000 !important; background-color: rgb(var(--default-rgb-pink)) !important; }
+.background-color-pink-05 { color: #000 !important; background-color: rgba(var(--default-rgb-pink), 0.5) !important; }
 .background-color-orange { background-color: rgb(var(--default-rgb-orange)); }
 .background-color-orange-10 { color: #FFF !important; background-color: rgb(var(--default-rgb-orange)) !important; }
 .background-color-orange-05 { color: #FFF !important; background-color: rgba(var(--default-rgb-orange), 0.5) !important; }

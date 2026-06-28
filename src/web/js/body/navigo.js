@@ -38,7 +38,8 @@ export function init() {
         
     const new_listener = (node, dest_string) => {
       node.addEventListener('click', (event) => {
-        event.preventDefault(); event.stopPropagation();
+        event.preventDefault();
+        //event.stopPropagation();
         if (!event.isTrusted) { return false }
         const page = document.querySelector(`body > main > main > main > ._${dest_string}`);
         if (page.classList.contains('displaynone')) {

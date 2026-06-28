@@ -3,6 +3,20 @@ exports.global_ui_vars = {
     copy: { button: false, content: false }
 };
 
+const _state = {
+  done: {
+    _document_asides_panels_toggle: false,
+    _document_bind_vertical_as_horizontal: false,
+    _document_init_scroll_right: false,
+    _document_theme_toggle: false,
+    _document_media_queries: false,
+    _document_set_mixed_colors: false,
+    _document_set_subfooter_textarea: false
+  }
+};
+exports.get_state = () => { return _state; }
+
+
 // https://stackoverflow.com/questions/11547672/how-to-stringify-event-object/58416333#58416333
 const normalize_object = (object, depth=0, max_depth=4) => {
     if (depth > max_depth) {
@@ -62,6 +76,8 @@ exports.page_main_add = (page, text, details = '', details_as_text_node = false,
   p_el.appendChild(details_el);
   const page_el = document.querySelector(`body > main > main > main > .${page}`);
   page_el.appendChild(p_el);
+  
+  _document_init_scroll_bottom(['body > main > main > main']);
 }
 
 exports.new_html_element = (tagname, content = false, classlist = [], keep_fn = false) => {
@@ -87,7 +103,7 @@ exports.new_html_element = (tagname, content = false, classlist = [], keep_fn = 
 exports.notification_add = (text, icon, background_color = false) => {
   const notifications_container = document.querySelector('body > main > main > main > .notifications');
   
-  const _icon_color = background_color ? background_color == 'yellow' ? 'icon-color-black' : 'icon-color-white' : 'icon-color-1';
+  const _icon_color = background_color ? ((background_color == 'yellow') || (background_color == 'pink') || (background_color == 'green')) ? 'icon-color-black' : 'icon-color-white' : 'icon-color-1';
   const notification_div_i = this.new_html_element(tagname = 'i', content = false, classlist = ['icon', icon, _icon_color], keep_fn = []);
   const notification_div_wrap_i = this.new_html_element(tagname = 'div', content = [notification_div_i], classlist = [], keep_fn = []);
   const notification_div = this.new_html_element(tagname = 'div', content = text, classlist = [], keep_fn = []);
@@ -139,33 +155,44 @@ for (let i in list) { // "0", "1", "2",
 for (let i of list) { // 4, 5, 6
 */
 
-const _state = {
-  done: {
-    _document_asides_panels_toggle: false,
-    _document_bind_vertical_as_horizontal: false,
-    _document_init_scroll_right: false,
-    _document_theme_toggle: false,
-    _document_media_queries: false,
-    _document_set_mixed_colors: false,
-    _document_set_subfooter_textarea: false
-  }
-};
-exports.get_state = () => { return _state; }
 
+// search.brave.com
+const trim_input = (text) => {
+  if (!text) return "";
+  let start = -1;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === ' ' || char === '\t' || char === '\n' || char === '\r') continue;
+    if (char === '\\') continue;
+    let count = 0;
+    let j = i - 1;
+    while (j >= 0 && text[j] === '\\') { count++; j--; }
+    if (count % 2 === 0) { start = i; break; }
+  }
+  if (start === -1) return "";
+  let end = -1;
+  for (let i = text.length - 1; i >= start; i--) {
+    const char = text[i];
+    if (char === ' ' || char === '\t' || char === '\n' || char === '\r') continue;
+    if (char === '\\') continue;
+    let count = 0;
+    let j = i - 1;
+    while (j >= start && text[j] === '\\') { count++; j--; }
+    if (count % 2 === 0) { end = i; break; }
+  }
+  return text.slice(start, end + 1);
+}
 
 const post_bottominput_socketio = () => {
   const _textarea_el = document.querySelector('body > main > main > footer > nav > section > textarea');
   const _textarea_el_value = _textarea_el.value;
   _textarea_el.value = '';
-  _textarea_el.style.height = "var(--default-text-size)"
+  _textarea_el.style.height = "var(--default-text-size)";
+  const _textarea_el_value_trim = trim_input(_textarea_el_value); // remove spaces and \char before and after text
   document.querySelector('body > main > main > footer').classList.remove('stick-bottom');
-  //const _textarea_el_value = (_textarea_el.value.includes('BEGIN PGP')
-  //  ? _textarea_el.value
-  //  : _textarea_el.value.replace(/\n/g, '');
-  
-  require('../body.js').postMessage_socketio({ origin: 'ui_footer_input_send', data: _textarea_el_value });
+  require('../body.js').postMessage_socketio({ origin: 'ui_footer_input_send', data: _textarea_el_value_trim });
   if ((window.location.pathname != '') && (window.location.pathname != '/')) {
-    this.page_main_add(window.location.pathname.replace('/','_'), 'text input', _textarea_el_value)
+    this.page_main_add(window.location.pathname.replace('/','_'), `${window.location.pathname.replace('/','_')}: USER INPUT`, _textarea_el_value_trim, details_as_text_node = false, background_color = 'pink')
   }
 }
 
@@ -174,15 +201,16 @@ exports.init = () => {
     // used to display on DEV but not on PROD: (console is removed by webpack)
     if (require('../body').IS_FOOSTACK_DEV) {
         this.notification_add('Running foostack as dev mode', 'icon-slash-square', background_color = 'yellow');
-        //window.console = { // !! AFTER: _document_set_body_pages()
-        //    _is_custom: true,
-        //    debug: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
-        //        this.page_main_add('_console', `console.debug: ${text}`, obj, details_as_text_node, background_color);
-        //    },
-        //    log: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
-        //        this.page_main_add('_console', `console.log: ${text}`, obj, details_as_text_node, background_color);
-        //    }
-        //}
+        window.console = { // !! AFTER: _document_set_body_pages()
+            _is_custom: true,
+            debug: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
+                this.page_main_add('_console', `console.debug: ${text}`, obj, details_as_text_node, background_color);
+                
+            },
+            log: (obj, text = '_text', details_as_text_node = false, background_color = false) => {
+                this.page_main_add('_console', `console.log: ${text}`, obj, details_as_text_node, background_color);
+            }
+        }
     }
     
     if (!window.Worker) {
@@ -200,11 +228,13 @@ exports.init = () => {
     _document_set_mixed_colors();
     _document_set_subfooter_textarea();
     
+    
+    
     document.querySelector('body > main > main > footer > nav > section > button').addEventListener('click', (event) => {
       post_bottominput_socketio();
     });
     
-    
+  
   
     /*
     const gen_login_auto_user_openpgpcreds = async () => {
@@ -239,7 +269,6 @@ const _document_set_subfooter_textarea = () => {
         bool = bool && ('altKey' in event ? !event.altKey : true) ;
         bool = bool && ('metaKey' in event ? !event.metaKey : true) ;
         if (bool) {
-          _textarea_el.value = _textarea_el.value.slice(0, _textarea_el.value.lastIndexOf('\n'));
           post_bottominput_socketio();
         }
       }
@@ -384,6 +413,15 @@ const _document_init_scroll_right = (elements_array) => {
     }
     
     _state.done._document_init_scroll_right = true ;
+}
+
+const _document_init_scroll_bottom = (elements_array) => {
+    const _init_scroll_right_elements = elements_array ? elements_array : [
+
+    ];
+    for (const element of document.querySelectorAll(_init_scroll_right_elements.join(","))) {
+        element.scrollTop = element.scrollHeight - element.clientHeight;
+    }
 }
 
 

@@ -117,12 +117,7 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
       if (client.login_user_openpgpcreds.seed && !client.login_user_openpgpcreds.pub) {
         const _askSigned = async () => {
           try {
-            //const mess = await openpgp.createMessage({ text: 'test' });
             const keypub = await openpgp.readKey({ armoredKey: onmessage_common_e.data.data });
-            // const userpub = await openpgp.encrypt({
-            // message: mess,
-            // encryptionKeys: keypub
-            // });
           } catch (e) {
             postMessage({ on: 'set', name: 'pub', err: onmessage_common_e.data.data, _err: 'pub (user) not valid' });
             return;
@@ -134,7 +129,6 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
           }
           client.login_user_openpgpcreds.pub = Buffer.from(onmessage_common_e.data.data).toString('base64');
           const _message = `{ "seed": "${client.login_user_openpgpcreds.seed}", "pub": "${client.login_user_openpgpcreds.pub}" }`;
-          //const _unsigned = await openpgp.createCleartextMessage(_message);
           postMessage({ on: 'set', name: 'pub', do: 'sign', message: _message });
         }
         _askSigned();

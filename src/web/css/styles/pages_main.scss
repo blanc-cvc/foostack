@@ -20,6 +20,7 @@ html {
             &:last-child { // details
               background: rgba(var(--background-rgb), 0.6);
               overflow-wrap: anywhere;
+              white-space: pre-wrap;
             }
           }
         }

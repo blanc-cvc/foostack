@@ -114,7 +114,9 @@ const handle_login = async (socket, deserialized) => {
 }
 
 const handle_data = async (data, socket, index) => {
+  
   console.log(data);
+  
   if ((typeof data == 'object') && Object.keys(data).includes('origin')) {
     switch (data.origin) {
       case 'ui_footer_input_send':
@@ -123,7 +125,6 @@ const handle_data = async (data, socket, index) => {
           case '/login':
           case '/login_auto':
             if (Object.keys(data).includes('signed_seed')) {
-              console.log(data);
               const openpgp = require('openpgp');
               // exceptions TODO
               try {
@@ -135,7 +136,9 @@ const handle_data = async (data, socket, index) => {
                 if (!Object.keys(_json_login_data_signed.err).length) {
                     if (_json_login_data_signed.seed === __db_memory.db.webpeers[index].login.seed) {
                         __db_memory.db.webpeers[index].login.pub = _json_login_data_signed.pub;
+                        
                         console.log(__db_memory.db.webpeers[index]);
+                        
                         // => { login: 'connected' }
                         delete data.signed_seed;
                         const _response = Object.assign(data, { response: 'connected' });

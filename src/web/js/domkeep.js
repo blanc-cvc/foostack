@@ -40,3 +40,13 @@ exports.keep = {
       'wheel', 'mousewheel', 'scroll'
     ]
 }
+
+exports.get_keep_functions_multi = (array) => {
+	let _mixed_keep = [];
+	for (let key of array) {
+	  for (let func of this.keep.functions[key]) {
+		_mixed_keep.push(func);
+	  }
+	}
+	return _mixed_keep;
+}
