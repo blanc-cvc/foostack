@@ -28,18 +28,20 @@ exports.serialize = async (uuid, openpgpcreds, data, pub) => {
         return Buffer.from(_signed).toString('base64');
     
     } catch (exception) {
-        console.log(exception);
-        return { err: { serialize: 'exception' } };
+        return Object.assign(data, { err: { serialize: exception } });
+        //return { err: { serialize: 'exception' } };
     }
 }
 
 exports.deserialize = async (openpgpcreds, serialized_data, openpgp_pub) => {
     const _date = new Date(Date.now());
     const openpgp = require('openpgp');
+    
+    let _json_data = {};
 
     try {
         const _signed = await openpgp.readCleartextMessage({ cleartextMessage: Buffer.from(serialized_data, 'base64').toString() });
-        const _json_data = JSON.parse(_signed.text); _json_data.err = {};
+        _json_data = JSON.parse(_signed.text);
     
         if (!openpgp_pub) { // keep priority to peer in case
             is_peer_exist = __db_memory.db.get.peer.exist_uuid(_json_data.uuid, __db_memory.db.peers);
@@ -80,7 +82,8 @@ exports.deserialize = async (openpgpcreds, serialized_data, openpgp_pub) => {
         return _json_data;
     
     } catch (exception) {
-        return { err: { deserialize: exception } };
+        return Object.assign(_json_data, { err: { deserialize: exception } });
+        //return { err: { deserialize: exception } };
     }
 }
 

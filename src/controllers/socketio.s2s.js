@@ -224,11 +224,11 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
     const _deserialized = await deserialize(__db_memory.db.server.openpgp, serialized_data);
     if (!_deserialized) { console.log('\n  => data received without handshake done: ignore\n'); return; }
 
-    if ((typeof _deserialized == 'object') && !Object.keys(_deserialized.err).length) {
+    if ((typeof _deserialized == 'object') && !Object.keys(_deserialized).includes('err')) {
         delete _deserialized.err;
         
         if (!Object.keys(_deserialized).includes('data')) { // handshake
-            if (!__utils_typeof.is_typeof_deserialized_handshake(_deserialized)) {
+            if (!await __utils_typeof.is_typeof_deserialized_handshake(_deserialized)) {
               this.ban_and_or_try_disconnect(reason = `MALFORMED_DESERIALIZED_HANDSHAKE_${send_ack ? 'CLIENT' : 'SERVER'}`, index, socket, ban = true); return;
             }
             if (send_ack) { // use socket
@@ -313,7 +313,7 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
             }
         } else { // data: send_ack = true / data ack: send_ack = false
                 // index arg is false
-            if (!__utils_typeof.is_typeof_deserialized_data(_deserialized)) {
+            if (!await __utils_typeof.is_typeof_deserialized_data(_deserialized)) {
               this.ban_and_or_try_disconnect(reason = 'MALFORMED_DESERIALIZED_DATA', index, socket, ban = true); return;
             }
             const _index = __db_memory.db.get.peer.index_uuid(_deserialized.uuid, __db_memory.db.peers); // handshake is done, we can use uuid
@@ -363,7 +363,7 @@ const handle_data = async (deserialized, index, pub) => {
     if (_deserialized_data_object_keys.includes('blockchain_method')) {
         switch (deserialized.data.blockchain_method) {
             case 'new_block':
-                if ( __utils_typeof.is_typeof_new_block(deserialized.data) ) {
+                if ( await __utils_typeof.is_typeof_new_block(deserialized.data) ) {
                     __db_blockchain.new_block_from_node(deserialized.data.block, index, pub);
                 } else {
                   // malformed new_block
@@ -372,7 +372,7 @@ const handle_data = async (deserialized, index, pub) => {
                 break;
             case 'get_block':
                 if (_deserialized_data_object_keys.includes('response')) { // got response
-                    if ( __utils_typeof.is_typeof_get_block_response(deserialized.data) ) {
+                    if ( await __utils_typeof.is_typeof_get_block_response(deserialized.data) ) {
                         switch (deserialized.data.callback) {
                             case 'sync_chain':
                                 const _peer = { server: __db_memory.db.peers[index].server, port: __db_memory.db.peers[index].port };
@@ -387,7 +387,7 @@ const handle_data = async (deserialized, index, pub) => {
                     }
                 } else { // got ask
                 // remove read() TODO
-                    if ( __utils_typeof.is_typeof_get_block_ask(deserialized.data) ) {
+                    if ( await __utils_typeof.is_typeof_get_block_ask(deserialized.data) ) {
                         const _block = __db_blockchain.blockchains[deserialized.data.chain].read().find({ block: deserialized.data.block }).value();
                         const _data = Object.assign(deserialized.data, { response: _block });
                         __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
@@ -399,7 +399,7 @@ const handle_data = async (deserialized, index, pub) => {
                 break;
             case 'get_firstlast': // if got call from default_peer, try sync chain
                 if (_deserialized_data_object_keys.includes('response')) { // got response
-                    if ( __utils_typeof.is_typeof_get_firstlast_response(deserialized.data) ) {
+                    if ( await __utils_typeof.is_typeof_get_firstlast_response(deserialized.data) ) {
                         switch (deserialized.data.callback) {
                             case 'sync_chain':
                                 const _peer = { server: __db_memory.db.peers[index].server, port: __db_memory.db.peers[index].port };
@@ -413,7 +413,7 @@ const handle_data = async (deserialized, index, pub) => {
                       this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_FIRSTLAST_RESPONSE", index, socket = false, ban = true); return;
                     }
                 } else { // got ask
-                  if ( __utils_typeof.is_typeof_get_firstlast_ask(deserialized.data) ) {
+                  if ( await __utils_typeof.is_typeof_get_firstlast_ask(deserialized.data) ) {
                       // remove read() TODO
                       if (typeof __db_blockchain.blockchains[deserialized.data.chain] == 'object') {
                         if ( Object.keys(__db_blockchain.blockchains[deserialized.data.chain]).includes('default_peers') && (typeof __db_blockchain.blockchains[deserialized.data.chain].default_peers == 'object') && (__db_blockchain.blockchains[deserialized.data.chain].default_peers.length > 0) ) {
@@ -441,7 +441,7 @@ const handle_data = async (deserialized, index, pub) => {
         switch (deserialized.data.node) {
             case 'get_myip':
               if (_deserialized_data_object_keys.includes('response')) { // got response
-                if ( __utils_typeof.is_typeof_get_myip_response(deserialized.data) ) {
+                if ( await __utils_typeof.is_typeof_get_myip_response(deserialized.data) ) {
                   if (__db_memory.db.get.peer.is_default_peer(__db_memory.db.peers[index].server, __db_memory.db.peers[index].port)) {
                     __db_memory.config.network.ip = deserialized.data.response;
                   }
@@ -450,7 +450,7 @@ const handle_data = async (deserialized, index, pub) => {
                   this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_MYIP_RESPONSE", index, socket = false, ban = true); return;
                 }
               } else { // got ask
-                if ( __utils_typeof.is_typeof_get_myip_ask(deserialized.data) ) {
+                if ( await __utils_typeof.is_typeof_get_myip_ask(deserialized.data) ) {
                   const _data = Object.assign(deserialized.data, { response: __db_memory.db.peers[index].server } );
                   __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
                 } else {
@@ -461,7 +461,7 @@ const handle_data = async (deserialized, index, pub) => {
               break;
             case 'get_trusted':
               if (_deserialized_data_object_keys.includes('response')) { // got response
-                if ( __utils_typeof.is_typeof_get_trusted_response(deserialized.data) ) {
+                if ( await __utils_typeof.is_typeof_get_trusted_response(deserialized.data) ) {
                   switch (deserialized.data.callback) {
                     case 'ask_and_verify_default_peers':
                       __db_blockchain.ask_and_verify_default_peers(deserialized.data, index, pub);
@@ -472,7 +472,7 @@ const handle_data = async (deserialized, index, pub) => {
                 }
               } else { // got ask
                 // { node: 'get_trusted', callback: 'ask_and_verify_default_peers' }
-                if ( __utils_typeof.is_typeof_get_trusted_ask(deserialized.data) ) {
+                if ( await __utils_typeof.is_typeof_get_trusted_ask(deserialized.data) ) {
                   const _data = Object.assign(deserialized.data, { response: __db_memory.db.default_peers } );
                   __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
                 } else {
@@ -483,7 +483,7 @@ const handle_data = async (deserialized, index, pub) => {
               break;
             case 'get_onlines': // initiated by peer who get handshake ack
                 if (_deserialized_data_object_keys.includes('response')) { // got response
-                    if ( __utils_typeof.is_typeof_get_onlines_response(deserialized.data) ) {
+                    if ( await __utils_typeof.is_typeof_get_onlines_response(deserialized.data) ) {
                         for (let indexfor = 0; indexfor < deserialized.data.response.length; indexfor++) { // onlines => [ { server: '', port: '' }, ... ]
                             if (!__db_memory.db.get.peer.exist_server(deserialized.data.response[indexfor].server, deserialized.data.response[indexfor].port)) { // peer doesnt exist
                                 if (!__db_memory.config.network.ip.includes(deserialized.data.response[indexfor].server) && (__db_memory.config.network.port != deserialized.data.response[indexfor].port)) { // avoid reconnecting to myself
@@ -527,7 +527,7 @@ const handle_data = async (deserialized, index, pub) => {
                       this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_ONLINES_RESPONSE", index, socket = false, ban = true); return;
                     }
                 } else { // got ask
-                    if ( __utils_typeof.is_typeof_get_onlines_ask(deserialized.data) ) {
+                    if ( await __utils_typeof.is_typeof_get_onlines_ask(deserialized.data) ) {
                       const _onlines = __db_memory.db.get.peer.onlines();
                       const _data = Object.assign(deserialized.data, { response: _onlines } );
                       __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
