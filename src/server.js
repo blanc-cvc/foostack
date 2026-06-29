@@ -120,6 +120,8 @@ __utils_network.get_port_to_use( async (port) => {
         } else if (_input[0] === 'verifychain') {
           // not true maybe to really make it auto (only at init or on demand)
           require('./db/blockchain').verify_chain(_input[1].replace(/\n/g, ''));
+        } else if (_input[0] === 'syncchain') {
+          require('./db/blockchain').sync_chain({ chain: _input[1].replace(/\n/g, '')});
         } else if (_input[0] === 'print_config\n' || _input[0] === 'pc\n') {
           console.log('__db_memory.config');
           console.log(__db_memory.config);

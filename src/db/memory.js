@@ -1,6 +1,6 @@
 
 exports.timeout = {
-    got_online_peers: 10*1000, // 10s // => sync_chain
+    got_online_peers: 120*1000, // 120s // => sync_chain; its maybe too high idk
     got_blockchain_firstlast: 10*1000 // 10s // => continue sync_chain
 }
 
@@ -31,7 +31,7 @@ exports.db = {
             is_port_valid: (port) => {
                 return typeof port == 'string'
                   ? typeof parseInt(port) == 'number'
-                    ? 80 <= parseInt(port) <= 65000
+                    ? ((80 <= parseInt(port)) && (parseInt(port) <= 65535))
                     : false
                   : false ;
             },

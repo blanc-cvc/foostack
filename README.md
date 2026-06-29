@@ -15,6 +15,8 @@ If a valid chain file is found in $HOME/.foostack/blockchains/_instanceport_/ , 
 - addpeer:_ip_:_port_ connect to this peer
 - sub:_chainhash_ subscribe to this chain read-only
 - unsub:_chainhash_ unsubscribe to this chain
+- verifychain:_chainhash_ check if the local chain is correct
+- synchain:_chainhash_
 - pp to display peers[]
 - ps to display the sockets
 - pc to display config
@@ -28,7 +30,7 @@ If a valid chain file is found in $HOME/.foostack/blockchains/_instanceport_/ , 
   - run this instance with npm run dev => you have an instance running on port 8002 with a _chainhash_ corresponding to 9bb1b6b115b00bda9339cdd630a84e158200badd00ae414972a2206faefe7123
   - from the first terminal: addpeer:127.0.0.1:8001
   - from the first terminal: sub:9bb1b6b115b00bda9339cdd630a84e158200badd00ae414972a2206faefe7123
-  - from the second terminal send new block with _somedata_: 9bb1b6b115b00bda9339cdd630a84e158200badd00ae414972a2206faefe7123:_somedata_
+  - from the second terminal send new block: 9bb1b6b115b00bda9339cdd630a84e158200badd00ae414972a2206faefe7123:_somedata_
   - then test with more instances sending new blocks from different peers trusted or not.
 
 #### Nodejs compilation including this

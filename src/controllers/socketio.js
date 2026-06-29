@@ -16,8 +16,9 @@ exports.init = () => {
                 // typeof handshake
                 const _deserialized = await deserialize(__db_memory.db.server.openpgp, serialized_data);
                 if (_deserialized.pub) { // handshake
-                  if (await __utils_typeof.is_typeof_deserialized_handshake(_deserialized)) {
+                  if (await __utils_typeof.is_typeof_deserialized_handshake(_deserialized, port_false = true)) {
                     console.log(`web: as ioserver got client id ${socket.client.conn.id}: handshake`);
+                    // TODO add checks like s2s
                     __db_memory.db.set.webpeer(_deserialized, socket.client.conn.id); // ADD PEER - ADD PEER - ADD PEER - ADD PEER
                     // emit { uuid, pub, port
                     socket.emit('data ack', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp));
@@ -30,6 +31,7 @@ exports.init = () => {
                   if (await __utils_typeof.is_typeof_deserialized_data(_deserialized)) {
                     // got { uuid, data: {}
                     console.log(`web: as ioserver got client id ${socket.client.conn.id}: data`);
+                    // TODO add checks like s2s
                     __db_memory.db.set.webpeer(_deserialized, socket.client.conn.id); // UPDATE PEER - UPDATE PEER - UPDATE PEER - UPDATE PEER
                     
                     // review data ack ?

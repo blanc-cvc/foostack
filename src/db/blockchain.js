@@ -11,6 +11,7 @@ const __common_network = require('../common/network');
 const __controllers_socketio_s2s = require('../controllers/socketio.s2s');
 const __utils_typeof = require('../utils/typeof');
 
+
 exports.blockchains = {}; // use this.blockchains[callback_data.chain].read().. for debug or tests to force file read
 exports.chainhash = false ;
 
@@ -360,9 +361,9 @@ exports.sync_chain = async (callback_data) => {
                             __db_memory.db.peers[_index_server].socket.disconnect();
                             __db_memory.db.blockchains[callback_data.chain].firstlast.all.splice(index, 1);
                             index--;
-                        } else {
+                        } else { 
                             if ( __db_memory.db.get.peer.is_default_peer(__db_memory.db.blockchains[callback_data.chain].firstlast.all[index].server, __db_memory.db.blockchains[callback_data.chain].firstlast.all[index].port, this.blockchains[callback_data.chain].default_peers) ) {  // trusted, currently we keep the highest block from trusted
-                                if (__db_memory.db.blockchains[callback_data.chain].firstlast.trusted.length > 0) {
+                                if (__db_memory.db.blockchains[callback_data.chain].firstlast.trusted.length > 0) { // keeping the highest trusted in the next if
                                     if (__db_memory.db.blockchains[callback_data.chain].firstlast.trusted[0].response.last.block < __db_memory.db.blockchains[callback_data.chain].firstlast.all[index].response.last.block) {
                                         __db_memory.db.blockchains[callback_data.chain].firstlast.trusted[0] = __db_memory.db.blockchains[callback_data.chain].firstlast.all[index];
                                     }

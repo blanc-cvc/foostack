@@ -176,6 +176,7 @@ const init_ioclient = (index) => {
               } else {
                 console.log(`!! ioclient sid ${__db_memory.db.peers[index].socket.io.engine.id}: already exist`);
                 _ban_and_disconnect();
+                return;
               }
             } catch (e) {
               //console.log(e);
@@ -229,7 +230,8 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
         
         if (!Object.keys(_deserialized).includes('data')) { // handshake
             if (!await __utils_typeof.is_typeof_deserialized_handshake(_deserialized)) {
-              this.ban_and_or_try_disconnect(reason = `MALFORMED_DESERIALIZED_HANDSHAKE_${send_ack ? 'CLIENT' : 'SERVER'}`, index, socket, ban = true); return;
+              this.ban_and_or_try_disconnect(reason = `MALFORMED_DESERIALIZED_HANDSHAKE_${send_ack ? 'CLIENT' : 'SERVER'}`, index, socket, ban = true);
+              return;
             }
             if (send_ack) { // use socket
                 _deserialized.server = socket.handshake.address;
@@ -237,8 +239,9 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
 
                 const is_server_blacklisted = __db_memory.db.get.peer.is_blacklisted(_deserialized.server, _deserialized.port);
                 if (is_server_blacklisted) {
-                  if (process.env.FOOSTACK_DEV == "true") {
-                    this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_SERVER", index, socket, ban = false); return;
+                  if (process.env.FOOSTACK_DEV == false) {
+                    this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_SERVER", index, socket, ban = false);
+                    return;
                   }
                 } // not displaying port - then don't use it in dev mode
                 
@@ -261,6 +264,8 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
                     const _data = { node: 'get_onlines' };
                     __db_memory.db.peers[_index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, _deserialized.pub));
                     return;
+                    // INIT
+                    
                   } else {
                     this.ban_and_or_try_disconnect(reason = "BAD_HANDSHAKE_CLIENT_SID_ALREADY_UPDATED", index, socket, ban = true); // not allowed to ask for another handshake, back connection already got
                     return;
@@ -281,6 +286,7 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
                   }
                 } else {
                   this.ban_and_or_try_disconnect(reason = "BAD_HANDSHAKE_CLIENT_UUID_OR_PUB_EXIST", index, socket, ban = true);
+                  return;
                 }
             } else { // got index from 'indexing handshake'
               // 'indexing' (part of the handshake) as CLIENT do !
@@ -291,7 +297,8 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
               
               const is_server_blacklisted = __db_memory.db.get.peer.is_blacklisted(__db_memory.db.peers[index].server, __db_memory.db.peers[index].port);
               if (is_server_blacklisted) {
-                this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_CLIENT", index, socket, ban = false); return;
+                this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_HANDSHAKE_CANCELED_AS_CLIENT", index, socket, ban = false);
+                return;
               }
 
               const _exist_uuid = __db_memory.db.get.peer.exist_uuid(_deserialized.uuid, __db_memory.db.peers);
@@ -302,25 +309,29 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
                   __db_memory.db.set.peer(index, { uuid: _deserialized.uuid, pub: _deserialized.pub }); // UPDATE PEER UUID AND PUB
                 } else {
                   this.ban_and_or_try_disconnect(reason = "BAD_HANDSHAKE_SERVER_CANT_UPDATE", index, socket, ban = true);
+                  return;
                 }
               } else if (_exist_uuid) { // verify deserialized
                 const _index_with_uuid = __db_memory.db.get.peer.index_uuid(_deserialized.uuid, __db_memory.db.peers);
                 _index_with_uuid_object_keys = Object.keys(__db_memory.db.peers[_index_with_uuid]);
                 if ( (_index_with_uuid_object_keys.includes('pub') && !__db_memory.db.peers[_index_with_uuid].pub.includes(_deserialized.pub)) || (_index_with_uuid_object_keys.includes('port') && !__db_memory.db.peers[_index_with_uuid].port.includes(_deserialized.port)) ) {
                   this.ban_and_or_try_disconnect(reason = "BAD_HANDSHAKE_SERVER_INDEXING", index, socket, ban = true);
+                  return;
                 }
               }
             }
         } else { // data: send_ack = true / data ack: send_ack = false
                 // index arg is false
             if (!await __utils_typeof.is_typeof_deserialized_data(_deserialized)) {
-              this.ban_and_or_try_disconnect(reason = 'MALFORMED_DESERIALIZED_DATA', index, socket, ban = true); return;
+              this.ban_and_or_try_disconnect(reason = 'MALFORMED_DESERIALIZED_DATA', index, socket, ban = true);
+              return;
             }
             const _index = __db_memory.db.get.peer.index_uuid(_deserialized.uuid, __db_memory.db.peers); // handshake is done, we can use uuid
             if ( (_index >= 0) && (typeof __db_memory.db.peers[_index] == 'object') ) {
                 const is_server_blacklisted = __db_memory.db.get.peer.is_blacklisted(__db_memory.db.peers[_index].server, __db_memory.db.peers[_index].port);
                 if (is_server_blacklisted) {
-                  this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_DATA_CANCELED", _index, socket, ban = false); return;
+                  this.ban_and_or_try_disconnect(reason = "INFO_BLACKLISTED_DATA_CANCELED", _index, socket, ban = false);
+                  return;
                 }
                 if (send_ack) {
                     // 'data'
@@ -339,6 +350,7 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
                 }
             } else {
               this.ban_and_or_try_disconnect(reason = 'BAD_DATA_UUID_UNKNOWN', index = false, socket, ban = true);
+              return;
             }
         }
     } else {
@@ -349,6 +361,7 @@ const on_data_common = async (index, serialized_data, send_ack, socket) => {
         } catch (exception) {
             
         }
+        return;
     }
 } // end on_data_common
 
@@ -367,7 +380,8 @@ const handle_data = async (deserialized, index, pub) => {
                     __db_blockchain.new_block_from_node(deserialized.data.block, index, pub);
                 } else {
                   // malformed new_block
-                  this.ban_and_or_try_disconnect(reason = "MALFORMED_NEW_BLOCK", index, socket = false, ban = true); return;
+                  this.ban_and_or_try_disconnect(reason = "MALFORMED_NEW_BLOCK", index, socket = false, ban = true);
+                  return;
                 }
                 break;
             case 'get_block':
@@ -383,17 +397,25 @@ const handle_data = async (deserialized, index, pub) => {
                         }
                     } else {
                       // malformed get_block response
-                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_BLOCK_RESPONSE", index, socket = false, ban = true); return;
+                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_BLOCK_RESPONSE", index, socket = false, ban = true);
+                      return;
                     }
                 } else { // got ask
                 // remove read() TODO
                     if ( await __utils_typeof.is_typeof_get_block_ask(deserialized.data) ) {
                         const _block = __db_blockchain.blockchains[deserialized.data.chain].read().find({ block: deserialized.data.block }).value();
-                        const _data = Object.assign(deserialized.data, { response: _block });
-                        __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
+                        if (_block) {
+                          const _data = Object.assign(deserialized.data, { response: _block });
+                          __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
+                        } else {
+                          // unknown block
+                          this.ban_and_or_try_disconnect(reason = "UNKNOWN_GET_BLOCK_ASK", index, socket = false, ban = true);
+                          return;
+                        }
                     } else {
                         // malformed get_block ask
-                        this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_BLOCK_ASK", index, socket = false, ban = true); return;
+                        this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_BLOCK_ASK", index, socket = false, ban = true);
+                        return;
                     }
                 }
                 break;
@@ -410,7 +432,8 @@ const handle_data = async (deserialized, index, pub) => {
                         }
                     } else {
                       // malformed get_firstlast response
-                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_FIRSTLAST_RESPONSE", index, socket = false, ban = true); return;
+                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_FIRSTLAST_RESPONSE", index, socket = false, ban = true);
+                      return;
                     }
                 } else { // got ask
                   if ( await __utils_typeof.is_typeof_get_firstlast_ask(deserialized.data) ) {
@@ -429,7 +452,8 @@ const handle_data = async (deserialized, index, pub) => {
                       }
                   } else {
                     // malformed get_firstlast ask
-                    this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_FIRSTLAST_ASK", index, socket = false, ban = true); return;
+                    this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_FIRSTLAST_ASK", index, socket = false, ban = true);
+                    return;
                   }
                 }
                 break;
@@ -447,7 +471,8 @@ const handle_data = async (deserialized, index, pub) => {
                   }
                 } else {
                   // malformed get_myip response
-                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_MYIP_RESPONSE", index, socket = false, ban = true); return;
+                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_MYIP_RESPONSE", index, socket = false, ban = true);
+                  return;
                 }
               } else { // got ask
                 if ( await __utils_typeof.is_typeof_get_myip_ask(deserialized.data) ) {
@@ -455,7 +480,8 @@ const handle_data = async (deserialized, index, pub) => {
                   __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
                 } else {
                   // malformed get_myip ask
-                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_MYIP_ASK", index, socket = false, ban = true); return;
+                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_MYIP_ASK", index, socket = false, ban = true);
+                  return;
                 }
               }
               break;
@@ -468,7 +494,8 @@ const handle_data = async (deserialized, index, pub) => {
                   }
                 } else {
                   // malformed get_trusted response
-                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_TRUSTED_RESPONSE", index, socket = false, ban = true); return;
+                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_TRUSTED_RESPONSE", index, socket = false, ban = true);
+                  return;
                 }
               } else { // got ask
                 // { node: 'get_trusted', callback: 'ask_and_verify_default_peers' }
@@ -477,7 +504,8 @@ const handle_data = async (deserialized, index, pub) => {
                   __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
                 } else {
                   // malformed get_trusted ask
-                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_TRUSTED_ASK", index, socket = false, ban = true); return;
+                  this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_TRUSTED_ASK", index, socket = false, ban = true);
+                  return;
                 }
               }
               break;
@@ -509,7 +537,7 @@ const handle_data = async (deserialized, index, pub) => {
                                 __db_memory.db.state.got_online_peers = true;
                                 // sync main chain only
                                 __db_blockchain.sync_chain({ chain: __db_blockchain.chainhash });
-                                // get_myip
+                                // get_myip (maybe dont ask every peer, make a random pool, or ask trusted)
                                 for (let forindex = 0; forindex < __db_memory.db.default_peers.length; forindex++) {
                                   const _index_default_peer = __db_memory.db.get.peer.index_server(__db_memory.db.default_peers[forindex].server, __db_memory.db.default_peers[forindex].port);
                                   if (_index_default_peer >= 0) {
@@ -524,7 +552,8 @@ const handle_data = async (deserialized, index, pub) => {
                         }, __db_memory.timeout.got_online_peers);
                     } else {
                       // malformed get_onlines response
-                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_ONLINES_RESPONSE", index, socket = false, ban = true); return;
+                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_ONLINES_RESPONSE", index, socket = false, ban = true);
+                      return;
                     }
                 } else { // got ask
                     if ( await __utils_typeof.is_typeof_get_onlines_ask(deserialized.data) ) {
@@ -533,7 +562,8 @@ const handle_data = async (deserialized, index, pub) => {
                       __db_memory.db.peers[index].socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, pub));
                     } else {
                       // malformed get_onlines ask
-                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_ONLINES_ASK", index, socket = false, ban = true); return;
+                      this.ban_and_or_try_disconnect(reason = "MALFORMED_GET_ONLINES_ASK", index, socket = false, ban = true);
+                      return;
                     }
                 }
                 break;
@@ -624,7 +654,7 @@ exports.disconnect_socket_server_with_sid = (sid) => {
   }
 }
 
-
+// make it generic, => utils/socketio.js
 exports.ban_and_or_try_disconnect = (reason = "", index = false, socket = false, ban = false) => {
   const _ban = { reason: reason, sockets_to_disconnect: [] }
   if ((index >= 0) && (typeof __db_memory.db.peers[index] == 'object')) {

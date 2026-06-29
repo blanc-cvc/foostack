@@ -85,13 +85,18 @@ exports.is_typeof_get_trusted_response = (deserialized_data) => {
 }
 
 // { uuid: _uuid, pub: _pub, port: _port }
-exports.is_typeof_deserialized_handshake = async (deserialized) => {
+exports.is_typeof_deserialized_handshake = async (deserialized, port_false = false) => {
   let _bool = true ;
   if (typeof deserialized == 'object') {
     _deserialized_handshake_object_keys = Object.keys(deserialized);
     _bool = _bool && _deserialized_handshake_object_keys.includes('uuid') && __db_memory.db.check.peer.is_uuid_valid(deserialized.uuid) ;
     _bool = _bool && _deserialized_handshake_object_keys.includes('pub') && await __db_memory.db.check.peer.is_pub_valid(deserialized.pub) ;
-    _bool = _bool && _deserialized_handshake_object_keys.includes('port') && __db_memory.db.check.peer.is_port_valid(deserialized.port) ;
+    if (port_false) {
+      _bool = _bool && _deserialized_handshake_object_keys.includes('port') && (deserialized.port === 'false') ;
+    } else {
+      _bool = _bool && _deserialized_handshake_object_keys.includes('port') && __db_memory.db.check.peer.is_port_valid(deserialized.port) ;
+    }
+    
     _bool = _bool && (_deserialized_handshake_object_keys.length == 3) ;
   } else { _bool = false ; }
   
