@@ -11,6 +11,7 @@ exports.config = {
 }
 
 exports.db = {
+    get_block_timeout: {},
     blacklist: [],
     blacklist_web: [],
     blockchains : {}, //{ firstlast: { all: [], trusted: [], grouped: {} }, last_response_block: {}, is_blockchain_sync: false }

@@ -12,6 +12,7 @@ const __controllers_socketio_s2s = require('../controllers/socketio.s2s');
 const __utils_typeof = require('../utils/typeof');
 
 
+exports.get_block_timeout = {}; // get block cleartimeout helper
 exports.blockchains = {}; // use this.blockchains[callback_data.chain].read().. for debug or tests to force file read
 exports.chainhash = false ;
 
@@ -229,6 +230,9 @@ exports.sync_chain = async (callback_data) => {
                 const _last_block_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_last_block)).digest(CONST_HASH_ENCODING);
                 if (_last_block_hash === callback_data.response.prev) {
                   if (callback_data.response.block > 0) {
+                    delete __db_memory.db.get_block_timeout[callback_data.response.block];
+                    clearTimeout(this.get_block_timeout[callback_data.response.block]);
+                    delete this.get_block_timeout[callback_data.response.block];
                     this.blockchains[callback_data.chain].push(callback_data.response).write(); // write the new block
                   }
                 } else { // ask get -1
@@ -297,16 +301,26 @@ exports.sync_chain = async (callback_data) => {
 
                 if (!_is_firstlastlast_equals_dblast) {
                     const _trusted_last_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(__db_memory.db.blockchains[callback_data.chain].firstlast.trusted[0].response.last)).digest(CONST_HASH_ENCODING);
+                    const _randomint = require('node:crypto').randomInt(0, (__db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash].length) )
                     const _random_peer_firstlast = __db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash].length > 1
-                        ? __db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash][require('node:crypto').randomInt(0, (__db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash].length) )]
+                        ? __db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash][_randomint]
                         : __db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash][0];
                     
                     const _peer_index = __db_memory.db.get.peer.index_server(_random_peer_firstlast.server, _random_peer_firstlast.port);
                     
                     if (_peer_index >= 0) {
+                        __db_memory.db.get_block_timeout[_data.block] = true ;
                         __db_memory.db.peers[_peer_index].socket.emit('data', await __common_network.serialize(
                             __db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, __db_memory.db.peers[_peer_index].pub
                         ));
+                        this.get_block_timeout[_data.block] = setTimeout(() => {
+                            if (__db_memory.db.get_block_timeout[_data.block]) {
+                              const _peer_index_timeout = __db_memory.db.get.peer.index_server(_random_peer_firstlast.server, _random_peer_firstlast.port);
+                              __controllers_socketio_s2s.ban_and_or_try_disconnect(reason = "PEER_GET_BLOCK_TIMEOUT", _peer_index_timeout, socket = false, ban = false);
+                              __db_memory.db.blockchains[callback_data.chain].firstlast.grouped[_trusted_last_hash].splice(_randomint, 1);
+                              this.sync_chain(callback_data); // redo timeout
+                            }
+                        }, 10 * 1000);
                     } else {
                         this.sync_chain(callback_data); // redo random peer maybe offline
                     }
