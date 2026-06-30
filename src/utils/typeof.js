@@ -1,5 +1,5 @@
 
-const __db_memory = require('../db/memory');
+//const __db_memory = require('../db/memory');
 
 
 const allowed_in_string = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -38,7 +38,7 @@ exports.is_typeof_get_myip_response = (deserialized_data) => {
       delete _get_myip_ask.response;
     }
     _bool = _bool && this.is_typeof_get_myip_ask(_get_myip_ask) ;
-    _bool = _bool && _get_myip_response_object_keys.includes('response') && __db_memory.db.check.peer.is_server_valid(deserialized_data.response) ;
+    _bool = _bool && _get_myip_response_object_keys.includes('response') && require('../db/memory').db.check.peer.is_server_valid(deserialized_data.response) ;
     _bool = _bool && (_get_myip_response_object_keys.length == 2) ;
   } else { _bool = false ; }
   
@@ -72,8 +72,8 @@ exports.is_typeof_get_trusted_response = (deserialized_data) => {
       for (let forindex = 0; forindex < deserialized_data.response; forindex++) {
         if (typeof deserialized_data.response[forindex] == 'object') {
           const _for_object_keys = Object.keys(deserialized_data.response[forindex]);
-          _bool = _bool && _for_object_keys.includes('server') && __db_memory.db.check.peer.is_server_valid(deserialized_data.response[forindex].server) ;
-          _bool = _bool && _for_object_keys.includes('port') && __db_memory.db.check.peer.is_port_valid(deserialized_data.response[forindex].port) ;
+          _bool = _bool && _for_object_keys.includes('server') && require('../db/memory').db.check.peer.is_server_valid(deserialized_data.response[forindex].server) ;
+          _bool = _bool && _for_object_keys.includes('port') && require('../db/memory').db.check.peer.is_port_valid(deserialized_data.response[forindex].port) ;
           _bool = _bool && (_for_object_keys.length == 2) ;
         } else { _bool = false ; break; }
       } // end for
@@ -89,12 +89,12 @@ exports.is_typeof_deserialized_handshake = async (deserialized, port_false = fal
   let _bool = true ;
   if (typeof deserialized == 'object') {
     _deserialized_handshake_object_keys = Object.keys(deserialized);
-    _bool = _bool && _deserialized_handshake_object_keys.includes('uuid') && __db_memory.db.check.peer.is_uuid_valid(deserialized.uuid) ;
-    _bool = _bool && _deserialized_handshake_object_keys.includes('pub') && await __db_memory.db.check.peer.is_pub_valid(deserialized.pub) ;
+    _bool = _bool && _deserialized_handshake_object_keys.includes('uuid') && require('../db/memory').db.check.peer.is_uuid_valid(deserialized.uuid) ;
+    _bool = _bool && _deserialized_handshake_object_keys.includes('pub') && await require('../db/memory').db.check.peer.is_pub_valid(deserialized.pub) ;
     if (port_false) {
       _bool = _bool && _deserialized_handshake_object_keys.includes('port') && (deserialized.port === 'false') ;
     } else {
-      _bool = _bool && _deserialized_handshake_object_keys.includes('port') && __db_memory.db.check.peer.is_port_valid(deserialized.port) ;
+      _bool = _bool && _deserialized_handshake_object_keys.includes('port') && require('../db/memory').db.check.peer.is_port_valid(deserialized.port) ;
     }
     
     _bool = _bool && (_deserialized_handshake_object_keys.length == 3) ;
@@ -108,7 +108,7 @@ exports.is_typeof_deserialized_data = (deserialized) => {
   let _bool = true ;
   if (typeof deserialized == 'object') {
     _deserialized_data_object_keys = Object.keys(deserialized);
-    _bool = _bool && _deserialized_data_object_keys.includes('uuid') && __db_memory.db.check.peer.is_uuid_valid(deserialized.uuid) ;
+    _bool = _bool && _deserialized_data_object_keys.includes('uuid') && require('../db/memory').db.check.peer.is_uuid_valid(deserialized.uuid) ;
     _bool = _bool && _deserialized_data_object_keys.includes('data') && (typeof deserialized.data == 'object') ;
     _bool = _bool && (_deserialized_data_object_keys.length == 2) ;
   } else { _bool = false ; }
@@ -242,8 +242,8 @@ exports.is_typeof_get_onlines_response = (deserialized_data) => {
       for (let forindex = 0; forindex < deserialized_data.response; forindex++) {
         if (typeof deserialized_data.response[forindex] == 'object') {
           const _for_object_keys = Object.keys(deserialized_data.response[forindex]);
-          _bool = _bool && _for_object_keys.includes('server') && __db_memory.db.check.peer.is_server_valid(deserialized_data.response[forindex].server) ;
-          _bool = _bool && _for_object_keys.includes('port') && __db_memory.db.check.peer.is_port_valid(deserialized_data.response[forindex].port) ;
+          _bool = _bool && _for_object_keys.includes('server') && require('../db/memory').db.check.peer.is_server_valid(deserialized_data.response[forindex].server) ;
+          _bool = _bool && _for_object_keys.includes('port') && require('../db/memory').db.check.peer.is_port_valid(deserialized_data.response[forindex].port) ;
           _bool = _bool && (_for_object_keys.length == 2) ;
         } else { _bool = false ; break; }
       } // end for

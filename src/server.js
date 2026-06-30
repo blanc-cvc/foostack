@@ -2,26 +2,26 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const __db_blockchain = require('./db/blockchain');
-const __db_memory = require('./db/memory');
+//const __db_memory = require('./db/memory');
 const __common_network = require('./common/network');
 const __common_crypto = require('./common/crypto');
 const __utils_network = require('./utils/network');
 const __utils_crypto = require('./utils/crypto');
 
-//__db_memory.db.connectivity_peers can contain any peer
-__db_memory.db.connectivity_peers = [
+//require('./db/memory').db.connectivity_peers can contain any peer
+require('./db/memory').db.connectivity_peers = [
         { server: '127.0.0.1', port: '8001' }
 ];
 
-// __db_memory.db.default_peers have to contain trusted peers only
+// require('./db/memory').db.default_peers have to contain trusted peers only
 if (process.env.FOOSTACK_DEV == "yes") {
-    __db_memory.db.default_peers = [
+    require('./db/memory').db.default_peers = [
         { server: '127.0.0.1', port: '8001' }
         ,{ server: '127.0.0.1', port: '8002' }
         //, { server: '127.0.0.1', port: '8003' }
     ];
 } else {
-    __db_memory.db.default_peers = [
+    require('./db/memory').db.default_peers = [
         { server: '127.0.0.1', port: '8001' } // here PRODUCTION servers
     ];
 }
@@ -74,28 +74,28 @@ exports.io = require('socket.io')(this.http, { // https://socket.io/docs/v4/serv
 });
 
 exports.generate_new_uuid = () => {
-  __db_memory.db.server.uuid = require('uuid').v5('s2s', require('uuid').v4());
-  console.log(`\n  => Server init with uuid: ${__db_memory.db.server.uuid}\n`);
+  require('./db/memory').db.server.uuid = require('uuid').v5('s2s', require('uuid').v4());
+  console.log(`\n  => Server init with uuid: ${require('./db/memory').db.server.uuid}\n`);
 }
 
 exports.generate_new_openpgp = async () => {
-  __db_memory.db.server.openpgp = await __common_crypto.openpgp.generate(
-    __db_memory.db.server.uuid,
-    `${__db_memory.db.server.uuid}@localhost.local`
+  require('./db/memory').db.server.openpgp = await __common_crypto.openpgp.generate(
+    require('./db/memory').db.server.uuid,
+    `${require('./db/memory').db.server.uuid}@localhost.local`
   );
   console.log(`\n  => Server init with new openpgp keys\n`);
 }
 
 
 __utils_network.get_port_to_use( async (port) => {
-  __db_memory.config.network.port = `${port}`;
+  require('./db/memory').config.network.port = `${port}`;
   this.generate_new_uuid();
   await this.generate_new_openpgp();
   this.http.listen({ port: port }, () => {
     console.log(`\n  => Server init listening on port: ${port}\n`);
-    // populate __db_memory.db.peers with __db_memory.db.default_peers omce
-    for (let index = 0; index < __db_memory.db.default_peers.length; index++) {
-      __db_memory.db.peers.push({ server: __db_memory.db.default_peers[index].server, port: __db_memory.db.default_peers[index].port });
+    // populate require('./db/memory').db.peers with require('./db/memory').db.default_peers omce
+    for (let index = 0; index < require('./db/memory').db.default_peers.length; index++) {
+      require('./db/memory').db.peers.push({ server: require('./db/memory').db.default_peers[index].server, port: require('./db/memory').db.default_peers[index].port });
     }
     
     require('./db/blockchain').init();
@@ -123,20 +123,28 @@ __utils_network.get_port_to_use( async (port) => {
         } else if (_input[0] === 'syncchain') {
           require('./db/blockchain').sync_chain({ chain: _input[1].replace(/\n/g, '')});
         } else if (_input[0] === 'print_config\n' || _input[0] === 'pc\n') {
-          console.log('__db_memory.config');
-          console.log(__db_memory.config);
+          console.log('require(\'./db/memory\').config');
+          console.log(require('./db/memory').config);
         } else if (_input[0] === 'print_sockets\n' || _input[0] === 'ps\n') {
           require('./controllers/socketio.s2s').print_sockets();
         } else if (_input[0] === 'print_peers\n' || _input[0] === 'pp\n') {
-          console.log('__db_memory.db.peers');
-          console.log(__db_memory.db.peers);
-          console.log('__db_memory.db.default_peers');
-          console.log(__db_memory.db.default_peers);
-          console.log('__db_memory.db.connectivity_peers');
-          console.log(__db_memory.db.connectivity_peers);
+          console.log('require(\'./db/memory\').db.peers');
+          console.log(require('./db/memory').db.peers);
+          console.log('require(\'./db/memory\').db.default_peers');
+          console.log(require('./db/memory').db.default_peers);
+          console.log('require(\'./db/memory\').db.connectivity_peers');
+          console.log(require('./db/memory').db.connectivity_peers);
+        } else if (_input[0] === 'print_blacklists\n' || _input[0] === 'pb\n') {
+          console.log('require(\'./db/memory\').db.blacklist');
+          console.log(require('./db/memory').db.blacklist);
+          console.log('require(\'./db/memory\').db.blacklist_web');
+          console.log(require('./db/memory').db.blacklist_web);
+        } else if (_input[0] === 'print_server_state\n' || _input[0] === 'pstate\n') {
+          console.log('require(\'./db/memory\').db.state');
+          console.log(require('./db/memory').db.state);
         } else if (_input[0] === 'addpeer') {
-          await __db_memory.db.set.peer(__db_memory.db.peers.length, { server: _input[1], port: _input[2].replace(/\n/g, '') }); // ADD PEER ONCE
-          await require('./controllers/socketio.s2s').init_ioclient_from_outside(__db_memory.db.peers.length-1); 
+          await require('./db/memory').db.set.peer(require('./db/memory').db.peers.length, { server: _input[1], port: _input[2].replace(/\n/g, '') }); // ADD PEER ONCE
+          await require('./controllers/socketio.s2s').init_ioclient_from_outside(require('./db/memory').db.peers.length-1); 
         } else {
           if (_input.length == 1) {
             _input[1] = _input[0];
@@ -146,20 +154,20 @@ __utils_network.get_port_to_use( async (port) => {
           const _data = { blockchain_method: 'new_block', block: _block, chain: _input[0] }
           console.log(`\n\nSENDING New block: ${_block.block}`);
   
-          //console.log(__db_memory.db);
+          //console.log(require('./db/memory').db);
   
-          for (let index = 0; index < __db_memory.db.peers.length; index++) {
-              if (__db_memory.db.peers[index].socket.connected) {
+          for (let index = 0; index < require('./db/memory').db.peers.length; index++) {
+              if (require('./db/memory').db.peers[index].socket.connected) {
                   
-                  __db_memory.db.peers[index].socket.emit('data', await __common_network.serialize(
-                      __db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, __db_memory.db.peers[index].pub
+                  require('./db/memory').db.peers[index].socket.emit('data', await __common_network.serialize(
+                      require('./db/memory').db.server.uuid, require('./db/memory').db.server.openpgp, _data, require('./db/memory').db.peers[index].pub
                   ));
                   
                   //    used to test serialize/deserialize
-                  //__db_memory.db.peers[index].socket.emit('data', 'datatest');
+                  //require('./db/memory').db.peers[index].socket.emit('data', 'datatest');
                   /*
-                  __db_memory.db.peers[index].socket.emit('data', await __common_network.serialize(
-                      __db_memory.db.server.uuid, __db_memory.db.server.openpgp, _data, false
+                  require('./db/memory').db.peers[index].socket.emit('data', await __common_network.serialize(
+                      require('./db/memory').db.server.uuid, require('./db/memory').db.server.openpgp, _data, false
                   ));
                   */
               }

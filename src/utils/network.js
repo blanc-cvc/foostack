@@ -1,5 +1,5 @@
 
-const __db_memory = require('../db/memory');
+//const __db_memory = require('../db/memory');
 
 exports.get_http_headers = (content_type) => {
     // https://github.com/helmetjs/helmet
@@ -36,7 +36,7 @@ exports.is_port_available = (port) => {
 }
 
 exports.get_port_to_use = async (callback) => {
-    const { port_range, network } = __db_memory.config;
+    const { port_range, network } = require('../db/memory').config;
     while (!network.port && port_range.start <= port_range.end) {
         try {
             await this.is_port_available(port_range.start);

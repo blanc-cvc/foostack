@@ -20,6 +20,8 @@ If a valid chain file is found in $HOME/.foostack/blockchains/_instanceport_/ , 
 - pp to display peers[]
 - ps to display the sockets
 - pc to display config
+- pb to display blacklists
+- pstate to display server state
 - _chainhash_:_string_ create and send a new block on _chainhash_ chain to every connected peers
 - _string_ create and send a new block with the default _chainhash_ to every connected peers
 

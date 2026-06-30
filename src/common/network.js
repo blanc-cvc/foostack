@@ -1,5 +1,5 @@
 
-const __db_memory = require('../db/memory');
+//const __db_memory = require('../db/memory');
 
 exports.serialize = async (uuid, openpgpcreds, data, pub) => {
     const _date = new Date(Date.now() - 1000);
@@ -20,7 +20,7 @@ exports.serialize = async (uuid, openpgpcreds, data, pub) => {
                     signingKeys: _openpgp_local_priv_obj
                 })).toString('base64')
             }" }` }
-            : { text: `{ "uuid": "${uuid}", "pub": "${openpgpcreds.pub}", "port": "${__db_memory.config.network.port}" }` };
+            : { text: `{ "uuid": "${uuid}", "pub": "${openpgpcreds.pub}", "port": "${require('../db/memory').config.network.port}" }` };
     
         const _unsigned = await openpgp.createCleartextMessage(_message);
         const _signed = await openpgp.sign({ date: _date, message: _unsigned, signingKeys: _openpgp_local_priv_obj });
@@ -43,12 +43,12 @@ exports.deserialize = async (openpgpcreds, serialized_data, openpgp_pub) => {
         _json_data = JSON.parse(_signed.text);
     
         if (!openpgp_pub) { // keep priority to peer in case
-            is_peer_exist = __db_memory.db.get.peer.exist_uuid(_json_data.uuid, __db_memory.db.peers);
-            is_webpeer_exist = __db_memory.db.get.peer.exist_uuid(_json_data.uuid, __db_memory.db.webpeers);
+            is_peer_exist = require('../db/memory').db.get.peer.exist_uuid(_json_data.uuid, require('../db/memory').db.peers);
+            is_webpeer_exist = require('../db/memory').db.get.peer.exist_uuid(_json_data.uuid, require('../db/memory').db.webpeers);
             if (is_peer_exist) {
-                openpgp_pub = __db_memory.db.peers[__db_memory.db.get.peer.index_uuid(_json_data.uuid, __db_memory.db.peers)].pub;
+                openpgp_pub = require('../db/memory').db.peers[require('../db/memory').db.get.peer.index_uuid(_json_data.uuid, require('../db/memory').db.peers)].pub;
             } else if (is_webpeer_exist) {
-                openpgp_pub = __db_memory.db.webpeers[__db_memory.db.get.peer.index_uuid(_json_data.uuid, __db_memory.db.webpeers)].pub;
+                openpgp_pub = require('../db/memory').db.webpeers[require('../db/memory').db.get.peer.index_uuid(_json_data.uuid, require('../db/memory').db.webpeers)].pub;
             } else if ( (!is_peer_exist && _json_data.data) || (!is_webpeer_exist && _json_data.data) ) {
                 return false; // data received without handshake done: ignore
             }

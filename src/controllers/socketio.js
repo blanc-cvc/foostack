@@ -1,7 +1,7 @@
 const { serialize, deserialize } = require('../common/network');
 
 const __server = require('../server');
-const __db_memory = require('../db/memory');
+//const __db_memory = require('../db/memory');
 const __utils_crypto = require('../utils/crypto');
 const __utils_typeof = require('../utils/typeof');
 
@@ -14,14 +14,14 @@ exports.init = () => {
         socket.on('data', async (serialized_data) => {
             try {
                 // typeof handshake
-                const _deserialized = await deserialize(__db_memory.db.server.openpgp, serialized_data);
+                const _deserialized = await deserialize(require('../db/memory').db.server.openpgp, serialized_data);
                 if (_deserialized.pub) { // handshake
                   if (await __utils_typeof.is_typeof_deserialized_handshake(_deserialized, port_false = true)) {
                     console.log(`web: as ioserver got client id ${socket.client.conn.id}: handshake`);
                     // TODO add checks like s2s
-                    __db_memory.db.set.webpeer(_deserialized, socket.client.conn.id); // ADD PEER - ADD PEER - ADD PEER - ADD PEER
+                    require('../db/memory').db.set.webpeer(_deserialized, socket.client.conn.id); // ADD PEER - ADD PEER - ADD PEER - ADD PEER
                     // emit { uuid, pub, port
-                    socket.emit('data ack', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp));
+                    socket.emit('data ack', await serialize(require('../db/memory').db.server.uuid, require('../db/memory').db.server.openpgp));
                   } else {
                     // socketio s2s :628
                     // ban: bad hns
@@ -32,11 +32,11 @@ exports.init = () => {
                     // got { uuid, data: {}
                     console.log(`web: as ioserver got client id ${socket.client.conn.id}: data`);
                     // TODO add checks like s2s
-                    __db_memory.db.set.webpeer(_deserialized, socket.client.conn.id); // UPDATE PEER - UPDATE PEER - UPDATE PEER - UPDATE PEER
+                    require('../db/memory').db.set.webpeer(_deserialized, socket.client.conn.id); // UPDATE PEER - UPDATE PEER - UPDATE PEER - UPDATE PEER
                     
                     // review data ack ?
-                    const _index = __db_memory.db.get.peer.index_uuid(_deserialized.uuid, __db_memory.db.webpeers);
-                    socket.emit('data ack', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _deserialized.data, __db_memory.db.webpeers[_index].pub));
+                    const _index = require('../db/memory').db.get.peer.index_uuid(_deserialized.uuid, require('../db/memory').db.webpeers);
+                    socket.emit('data ack', await serialize(require('../db/memory').db.server.uuid, require('../db/memory').db.server.openpgp, _deserialized.data, require('../db/memory').db.webpeers[_index].pub));
                     // end of ack
                     
                     console.log(_deserialized);
@@ -54,7 +54,7 @@ exports.init = () => {
         socket.on('data ack', async (serialized_data) => {
             console.log(`web: as ioserver got client id ${socket.client.conn.id}: data ack`);
             try {
-                const _deserialized = await deserialize(__db_memory.db.server.openpgp, serialized_data);
+                const _deserialized = await deserialize(require('../db/memory').db.server.openpgp, serialized_data);
                 console.log(_deserialized);
             } catch (e) {
                 console.log(e);
@@ -63,9 +63,9 @@ exports.init = () => {
 
         socket.on('disconnect', () => {
             console.log(`web: as ioserver got client id ${socket.client.conn.id}: disconnected`);
-            const _index = __db_memory.db.get.peer.index_sid(socket.client.conn.id, __db_memory.db.webpeers);
-            __db_memory.db.del.webpeer.index(_index);
-            console.log(__db_memory.db.webpeers);
+            const _index = require('../db/memory').db.get.peer.index_sid(socket.client.conn.id, require('../db/memory').db.webpeers);
+            require('../db/memory').db.del.webpeer.index(_index);
+            console.log(require('../db/memory').db.webpeers);
         });
     });
 }
@@ -93,29 +93,29 @@ const handle_data = async (data, socket, index) => {
                   const _verify_result_clear = await openpgp.verify({ message: _signed, verificationKeys: _json_data_openpgp_pub_obj });
                   try { await _verify_result_clear.signatures[0].verified } catch (e) { _json_login_data_signed.err.signature_clear = `clear: Signature could not be verified: ${e.message}` }
                   if (!Object.keys(_json_login_data_signed.err).length) {
-                      if (_json_login_data_signed.seed === __db_memory.db.webpeers[index].login.seed) {
-                          __db_memory.db.webpeers[index].login.pub = _json_login_data_signed.pub;
+                      if (_json_login_data_signed.seed === require('../db/memory').db.webpeers[index].login.seed) {
+                          require('../db/memory').db.webpeers[index].login.pub = _json_login_data_signed.pub;
                           
-                          console.log(__db_memory.db.webpeers[index]);
+                          console.log(require('../db/memory').db.webpeers[index]);
                           
                           // => { login: 'connected' }
                           delete data.signed_seed;
                           const _response = Object.assign(data, { response: 'connected' });
-                          socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _response, __db_memory.db.webpeers[index].pub));
+                          socket.emit('data', await serialize(require('../db/memory').db.server.uuid, require('../db/memory').db.server.openpgp, _response, require('../db/memory').db.webpeers[index].pub));
                       } else {
-                          __db_memory.db.del.webpeer.index(index);
+                          require('../db/memory').db.del.webpeer.index(index);
                       }
                   } else {
-                      __db_memory.db.del.webpeer.index(index);
+                      require('../db/memory').db.del.webpeer.index(index);
                   }
                 } catch (error) {
                   console.log(error);
                 }
               } else { // asking seed
                 const _seed = __utils_crypto.misc.generate.seed(50, 100, 'base64');
-                __db_memory.db.webpeers[index].login = _seed;
+                require('../db/memory').db.webpeers[index].login = _seed;
                 const _response = Object.assign(data, { response: _seed });
-                socket.emit('data', await serialize(__db_memory.db.server.uuid, __db_memory.db.server.openpgp, _response, __db_memory.db.webpeers[index].pub));
+                socket.emit('data', await serialize(require('../db/memory').db.server.uuid, require('../db/memory').db.server.openpgp, _response, require('../db/memory').db.webpeers[index].pub));
               }
             } else {
               // ban: bad login

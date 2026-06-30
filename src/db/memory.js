@@ -11,7 +11,7 @@ exports.config = {
 }
 
 exports.db = {
-    get_block_timeout: {},
+    timeout: { get_block: {}, get_onlines: false  },
     blacklist: [],
     blacklist_web: [],
     blockchains : {}, //{ firstlast: { all: [], trusted: [], grouped: {} }, last_response_block: {}, is_blockchain_sync: false }
@@ -94,7 +94,7 @@ exports.db = {
               if (typeof server != 'string') { return false ; }
               if (typeof port == 'number') { port = `${port}` }
               const _default_peers = default_peers ? default_peers : this.db.default_peers;
-              return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && (port == el.port) }).length > 0 ? true : false;
+              return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && ((process.env.FOOSTACK_DEV == false) ? true : (port == el.port)) }).length > 0 ? true : false;
             },
             is_blacklisted: (server, port = false) => {
                 if (typeof port == 'number') { port = `${port}` }
