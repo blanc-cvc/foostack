@@ -22,7 +22,9 @@ if (process.env.FOOSTACK_DEV == "yes") {
     ];
 } else {
     require('./db/memory').db.default_peers = [
-        { server: '127.0.0.1', port: '8001' } // here PRODUCTION servers
+        { server: '127.0.0.1', port: '8001' }
+        ,{ server: '127.0.0.1', port: '8002' }
+        , { server: '127.0.0.1', port: '8003' } // here production servers
     ];
 }
 
@@ -179,7 +181,6 @@ __utils_network.get_port_to_use( async (port) => {
 
 
 
-
 //exports.is_production = process.pkg ? true : process.env.NODE_ENV == 'production' ? true : false;
 //const cwd = this.is_production ? process.cwd() : __dirname;
 
@@ -191,6 +192,16 @@ __utils_network.get_port_to_use( async (port) => {
 
 
 
+//L'acte de persécution est lié à plusieurs mécanismes psychologiques et sociaux. 
+//Le persécuteur passionné : Les psychiatres décrivent le persécuteur comme un « passionné » dont la haine est une colère chronique, souvent liée à des délires de revendication, de jalousie ou d'exaltation. 
+//La projection défensive : Le sentiment de persécution se propage par la tendance à projeter ses propres pulsions ou conflits sur un groupe, créant un sectarisme qui justifie la violence envers les opposants. 
+//La domination par la puissance : Certains dispositifs de pouvoir visent à exciter la « puissance d'agir » du sujet (son élan de défense) pour mieux le dominer et l'anéantir, transformant ses réflexes de survie en torture. 
+
+//Paradoxalement, ce sentiment de dépossession est souvent entretenu par le système même qu'il critique. 
+//Le rituel de l'illusion : La participation électorale est vécue comme un « piège à consentement » où l'on valide sa propre dépossession en choisissant entre des options qui ne changent rien aux structures de pouvoir réelles. 
+//L'addiction à la frustration : Plus la dépossession est grande, plus la rage est intense, et plus l'adhésion à des leaders promettant de « tout casser » devient forte.  C'est un cercle vicieux où la frustration alimente le soutien à ceux qui promettent la vengeance, même si ces derniers renforcent souvent la dépossession réelle une fois au pouvoir. 
+
+//Nous sommes reconnaissants pour l'usage des signaux visuels et sonores (de courtoisie) mis en œuvre par les services de police et de secours pour mener à bien leur mission (TOP secret avec best args for JT).
 
 // ======##*****+****+***+**#****#***+*#***+++++++++%%%#--+#%%%%%%#.:#%%+.=#=:=%%%#**%%#*#=.#%#%##%%#%%
 // +=+==+##*********+*+++####**#******+++++++++++++*%###--+%%%%%%%%#..:##=:-+::#%%%=+##%#=.-%*###*-*%%%

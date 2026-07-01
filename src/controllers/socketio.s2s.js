@@ -420,7 +420,6 @@ const handle_data = async (deserialized, index, pub) => {
                       return;
                     }
                 } else { // got ask
-                // remove read() TODO
                     if ( await __utils_typeof.is_typeof_get_block_ask(deserialized.data) ) {
                         const _block = __db_blockchain.blockchains[deserialized.data.chain].read().find({ block: deserialized.data.block }).value();
                         if (_block) {
@@ -456,7 +455,6 @@ const handle_data = async (deserialized, index, pub) => {
                     }
                 } else { // got ask
                   if ( await __utils_typeof.is_typeof_get_firstlast_ask(deserialized.data) ) {
-                      // remove read() TODO
                       if (typeof __db_blockchain.blockchains[deserialized.data.chain] == 'object') {
                         if ( Object.keys(__db_blockchain.blockchains[deserialized.data.chain]).includes('default_peers') && (typeof __db_blockchain.blockchains[deserialized.data.chain].default_peers == 'object') && (__db_blockchain.blockchains[deserialized.data.chain].default_peers.length > 0) ) {
                           const _first_block = __db_blockchain.blockchains[deserialized.data.chain].read().first().value();
@@ -622,48 +620,50 @@ exports.print_sockets = () => {
   }
 }
 
-
 exports.check_add_unconnected_peers = (peers_array) => {
   _is_default_peers = JSON.stringify(peers_array) == JSON.stringify(require('../db/memory').db.default_peers); // else it's connectivity
   // if trusted_list equals connectivity .. displaying default but it's connectivity ..
   console.log(`\n\n  .. checking if ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peers are in peers[]`);
   const _dc_peers_active_index = [];
   
+  // invert to change the value for each entry
+  require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only = !require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only;
+  
+  console.log(_dc_peers_active_index);
   // remove or populate, not at the same call to let 0 peers process
-  if (require('../db/memory').db.peers.length > 0) {
-    for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
-      for (let index_peer = 0; index_peer < require('../db/memory').db.peers.length; index_peer++) {
-        const _object_keys_peer = Object.keys(require('../db/memory').db.peers[index_peer]);
-        if (_object_keys_peer.includes('server') && _object_keys_peer.includes('port')) {
-          if ( require('../db/memory').db.peers[index_peer].server.includes(peers_array[index_dc_peer].server) && require('../db/memory').db.peers[index_peer].port.includes(peers_array[index_dc_peer].port) ) {
-            if ( _object_keys_peer.includes('socket') && Object.keys(require('../db/memory').db.peers[index_peer].socket).includes('connected') && require('../db/memory').db.peers[index_peer].socket.connected && _object_keys_peer.includes('sid') ) {
-              _dc_peers_active_index.push(index_dc_peer);
-            } else {
-              console.log(`     removing disconnected ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peer from peers[] before retry, server: ${peers_array[index_dc_peer].server} port: ${peers_array[index_dc_peer].port}`);
-              try {
-                require('../db/memory').db.peers[index_peer].socket.disconnect();
-              } catch (e) {}
-              require('../db/memory').db.del.peer.index(index_peer);
-            }
+  for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
+    for (let index_peer = 0; index_peer < require('../db/memory').db.peers.length; index_peer++) {
+      const _object_keys_peer = Object.keys(require('../db/memory').db.peers[index_peer]);
+      if (_object_keys_peer.includes('server') && _object_keys_peer.includes('port')) {
+        if ( require('../db/memory').db.peers[index_peer].server.includes(peers_array[index_dc_peer].server) && require('../db/memory').db.peers[index_peer].port.includes(peers_array[index_dc_peer].port) ) {
+          if ( _object_keys_peer.includes('socket') && Object.keys(require('../db/memory').db.peers[index_peer].socket).includes('connected') && require('../db/memory').db.peers[index_peer].socket.connected && _object_keys_peer.includes('sid') ) {
+            _dc_peers_active_index.push(index_dc_peer);
+          } else {
+            console.log(`     removing disconnected ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peer from peers[] before retry, server: ${peers_array[index_dc_peer].server} port: ${peers_array[index_dc_peer].port}`);
+            try {
+              require('../db/memory').db.peers[index_peer].socket.disconnect();
+            } catch (e) {}
+            require('../db/memory').db.del.peer.index(index_peer);
           }
         }
       }
     }
+  }
+  if (_dc_peers_active_index.length == peers_array.length) {
+    console.log(`  every ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peers are in peers, skip ..`);
   } else {
-    if (_dc_peers_active_index.length == peers_array.length) {
-      console.log(`  every ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peers are in peers, skip ..`);
-    } else {
-      for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
-        if ( !(require('../db/memory').config.network.ip.includes(peers_array[index_dc_peer].server) && require('../db/memory').config.network.port.includes(peers_array[index_dc_peer].port)) ) {
-          if (!_dc_peers_active_index.includes(index_dc_peer)) {
+    for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
+      if ( !(require('../db/memory').config.network.ip.includes(peers_array[index_dc_peer].server) && require('../db/memory').config.network.port.includes(peers_array[index_dc_peer].port)) ) {
+        if (!_dc_peers_active_index.includes(index_dc_peer)) {
+          if (!require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only) { // if it's not remove only
             console.log(`     add ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peer server: ${peers_array[index_dc_peer].server} port: ${peers_array[index_dc_peer].port}`);
             require('../db/memory').db.peers.push({ server: peers_array[index_dc_peer].server, port: peers_array[index_dc_peer].port }); // using direct array we dont have seen key
             
             init_ioclient(require('../db/memory').db.peers.length-1);
           }
-        } else {
-          console.log(`     skip ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peer server: ${peers_array[index_dc_peer].server} port: ${peers_array[index_dc_peer].port}`);
         }
+      } else {
+        console.log(`     skip ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peer server: ${peers_array[index_dc_peer].server} port: ${peers_array[index_dc_peer].port}`);
       }
     }
   }

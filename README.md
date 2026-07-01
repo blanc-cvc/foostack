@@ -11,6 +11,8 @@ Connected peers are discovered by asking a list of online nodes to everyone. Add
 
 If a valid chain file is found in $HOME/.foostack/blockchains/_instanceport_/ , this instance subscribe to it (at init) waiting for new blocks in order to verify every peer from this default_peers/chainhash relation.
 
+When the sync is done, a file helper is writed to $HOME/.foostack/blockchains/_instanceport_/_chainhash_.syncdone (to know when the input can be used when running build or prod) (some minutes).
+
 #### stdin use of an instance:
 - addpeer:_ip_:_port_ connect to this peer
 - sub:_chainhash_ subscribe to this chain read-only

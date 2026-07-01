@@ -14,12 +14,12 @@ exports.db = {
     timeout: { get_block: {}, get_onlines: false  },
     blacklist: [],
     blacklist_web: [],
-    blockchains : {}, //{ firstlast: { all: [], trusted: [], grouped: {} }, last_response_block: {}, is_blockchain_sync: false }
+    blockchains : {}, //{ firstlast: { all: [], trusted: [], grouped: {} }, last_response_block: {}, is_blockchain_sync: false } // move to db/blockchain file if not used else where
     default_peers: [],
     connectivity_peers: [],
     peers: [],
     server: { uuid: false, openpgp: false },
-    state: { got_online_peers: false, socketio_server_restarting: false, available_for_new_connection: true },
+    state: { check_add_unconnected_peers_is_remove_only: false, got_online_peers: false, socketio_server_restarting: false, available_for_new_connection: true },
     webpeers: [],
     check: {
         peer: {
@@ -95,6 +95,7 @@ exports.db = {
               if (typeof port == 'number') { port = `${port}` }
               const _default_peers = default_peers ? default_peers : this.db.default_peers;
               return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && ((process.env.FOOSTACK_DEV == false) ? true : (port == el.port)) }).length > 0 ? true : false;
+              //return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && (port == el.port) }).length > 0 ? true : false;
             },
             is_blacklisted: (server, port = false) => {
                 if (typeof port == 'number') { port = `${port}` }

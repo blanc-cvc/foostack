@@ -23,15 +23,28 @@ exports.init = () => {
     if (!fs.existsSync(path.join(process.env.HOME, '.foostack/blockchains'))) { fs.mkdirSync(path.join(process.env.HOME, '.foostack/blockchains')) }
     if (!fs.existsSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}`))) { fs.mkdirSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}`)) }
     
+    
     this.chainhash = require('node:crypto').createHash('sha256').update(JSON.stringify(require('./memory').db.default_peers)).digest('hex');
     console.log(`\n Blockchain INIT with default chain: ${this.chainhash}\n`);
+    
+    
+    // start by his chain
     this.blockchain_subscribe(this.chainhash);
     
     const _readdir_blockchain_files = fs.readdirSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}`), { recursive: false });
     for (let index = 0; index < _readdir_blockchain_files.length; index++) {
       _chainhash = _readdir_blockchain_files[index].split('.')[0];
-      if (_chainhash != this.chainhash) {
-        this.blockchain_subscribe(_chainhash);
+      
+      // remove every .syncdone files
+      if (fs.existsSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}/${_chainhash}.syncdone`))) { 
+        fs.rmSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}/${_chainhash}.syncdone`), { force: true, recursive: false });
+      }
+      
+      if (_readdir_blockchain_files[index].split('.')[1] == 'json') {
+        if (_chainhash != this.chainhash) {
+          // then subscribe others
+          this.blockchain_subscribe(_chainhash);
+        }
       }
     }
 }
@@ -117,6 +130,7 @@ exports.new_block_from_node = async (block, peer_index, peer_pub) => {
             if (block.block > 0) {
               this.blockchains[block.chain].push(block).write();
               
+              // emit the new block to every peer, if a peer is not directly connected to a default, he can have it
               const _data = { blockchain_method: 'new_block', block: block, chain: block.chain }
               for (let index = 0; index < require('./memory').db.peers.length; index++) {
                 if (require('./memory').db.peers[index].socket.connected) {
@@ -241,7 +255,6 @@ exports.sync_chain = async (callback_data) => {
       if ((typeof callback_data == 'object') && Object.keys(callback_data).includes('blockchain_method') ) {
         switch (callback_data.blockchain_method) {
             case 'get_block':
-              // remove read() TODO
                 let _last_block = this.blockchains[callback_data.chain].read().last().value();
                 const _last_block_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_last_block)).digest(CONST_HASH_ENCODING);
                 
@@ -319,12 +332,10 @@ exports.sync_chain = async (callback_data) => {
                 if (callback_data.response.prev !== '') { // call from verify_chain
                     require('./memory').db.blockchains[callback_data.chain].last_response_block = callback_data;
                 }
-                // remove read() TODO
                 const _data = ( (_last_block_hash === callback_data.response.prev) || (callback_data.response.block == 0) )
                     ? { blockchain_method: 'get_block', block: this.blockchains[callback_data.chain].read().last().value().block+1, callback: 'sync_chain', chain: callback_data.chain }
                     : { blockchain_method: 'get_block', block: _last_block.block, callback: 'sync_chain', chain: callback_data.chain };
                 
-                // remove read() TODO
                 const _is_firstlastlast_equals_dblast = JSON.stringify(require('./memory').db.blockchains[callback_data.chain].firstlast.trusted[0].response.last) === JSON.stringify(this.blockchains[callback_data.chain].read().last().value()) ;
                 //false const _is_firstlastlast_equals_callback = require('./memory').db.blockchains[callback_data.chain].firstlast.trusted[0].response.last.block === callback_data.response.block ; // !=
 
@@ -383,10 +394,8 @@ exports.sync_chain = async (callback_data) => {
                       require('./memory').db.blockchains[callback_data.chain].is_blockchain_sync = false;
                       return;
                     }
-                    // remove read() TODO
                     const _first_block = this.blockchains[callback_data.chain].read().first().value();
                     const _first_block_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_first_block)).digest(CONST_HASH_ENCODING);
-                    // remove read() TODO
                     const _last_block = this.blockchains[callback_data.chain].read().last().value();
                     const _last_block_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_last_block)).digest(CONST_HASH_ENCODING);
 
@@ -472,7 +481,11 @@ exports.sync_chain = async (callback_data) => {
                         } else {
                             this.verify_chain(callback_data.chain);
                         }
-
+                      
+                    } else {
+                      
+                      this.verify_chain(callback_data.chain);
+                      
                     }
 
 
@@ -491,12 +504,10 @@ exports.sync_chain = async (callback_data) => {
 
 //don't try to verify chain until firstlast array done inside sync_chain function
 exports.verify_chain = (chain) => {
-  // remove read() TODO
     let is_sync_chain_called = false;
     const _last_block = this.blockchains[chain].read().last().value();
     if (_last_block.block > 0) {
         for (let index = 1; index <= _last_block.block; index++) {
-          // remove read() TODO
             const _block = this.blockchains[chain].read().find({ block: index }).value();
             const _prev_block = this.blockchains[chain].read().find({ block: index-1 }).value();
             const _prev_hash = require('node:crypto').createHash(CONST_HASH).update(JSON.stringify(_prev_block)).digest('base64');
@@ -524,6 +535,7 @@ exports.verify_chain = (chain) => {
     }
     if (!is_sync_chain_called) {
       console.log('\n  => Chain is verified !');
+      fs.writeFileSync(path.join(process.env.HOME, `.foostack/blockchains/${require('./memory').config.network.port}/${chain}.syncdone`), '', { encoding: 'utf8' });
     }
 }
 
