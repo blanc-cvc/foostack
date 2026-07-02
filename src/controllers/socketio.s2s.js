@@ -11,16 +11,15 @@ const __utils_typeof = require('../utils/typeof');
 
 exports.init = () => {
     const _onconnection = (socket) => {
+      
         console.log(`as ioserver got client sid ${socket.client.conn.id}: connected`);
         //on production blacklisted by ip only dont wait port
         //running npm run build replace process.env.FOOSTACK_DEV by false
-        if (process.env.FOOSTACK_DEV == false) {
+        if (process.env.FOOSTACK_DEV === false) {
           const is_server_blacklisted = require('../db/memory').db.get.peer.is_blacklisted(socket.handshake.address);
-          // if got_online_peers is false and its not a default peer (trusted)
-          //const is_not_default_peer_boot = !require('../db/memory').db.got_online_peers && require('../db/memory').db.get.peer.is_default_peer(socket.handshake.address, false);
-          if (is_server_blacklisted) { //  || is_not_default_peer_boot
-                  socket.disconnect();
-                  return;
+          if (is_server_blacklisted) {
+            socket.disconnect();
+            return;
           }
         }
         if (!require('../db/memory').db.check.peer.is_sid_valid(socket.client.conn.id)) { 
@@ -112,6 +111,7 @@ exports.init = () => {
         // if it's a self connection for default_peers only
         //   => disconnect and remove
         //   (enter once at start on connection)
+        
         if (require('../db/memory').config.network.ip.length == 0) {
             const _port = socket.handshake.headers.host.slice(socket.handshake.headers.host.lastIndexOf(':') + 1);
             const _ip = socket.handshake.headers.host.slice(0, socket.handshake.headers.host.lastIndexOf(':'));
@@ -487,7 +487,7 @@ const handle_data = async (deserialized, index, pub) => {
             case 'get_myip':
               if (_deserialized_data_object_keys.includes('response')) { // got response
                 if ( await __utils_typeof.is_typeof_get_myip_response(deserialized.data) ) {
-                  if (require('../db/memory').config.network.ip.lenght == 0) {
+                  if (require('../db/memory').config.network.ip.length == 0) {
                     //if (require('../db/memory').db.get.peer.is_default_peer(require('../db/memory').db.peers[index].server, require('../db/memory').db.peers[index].port)) {
                     require('../db/memory').config.network.ip = deserialized.data.response;
                   }
@@ -624,12 +624,14 @@ exports.check_add_unconnected_peers = (peers_array) => {
   _is_default_peers = JSON.stringify(peers_array) == JSON.stringify(require('../db/memory').db.default_peers); // else it's connectivity
   // if trusted_list equals connectivity .. displaying default but it's connectivity ..
   console.log(`\n\n  .. checking if ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peers are in peers[]`);
+  //_dc for default and connectivity
   const _dc_peers_active_index = [];
   
   // invert to change the value for each entry
-  require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only = !require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only;
+  if (_is_default_peers) { // because this function is called twice in controllers/cron
+    require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only = !require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only;
+  }
   
-  console.log(_dc_peers_active_index);
   // remove or populate, not at the same call to let 0 peers process
   for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
     for (let index_peer = 0; index_peer < require('../db/memory').db.peers.length; index_peer++) {
@@ -653,6 +655,7 @@ exports.check_add_unconnected_peers = (peers_array) => {
     console.log(`  every ${_is_default_peers ? 'DEFAULT' : 'CONNECTIVITY'} peers are in peers, skip ..`);
   } else {
     for (let index_dc_peer = 0; index_dc_peer < peers_array.length; index_dc_peer++) {
+      // exclude myself from peers_array
       if ( !(require('../db/memory').config.network.ip.includes(peers_array[index_dc_peer].server) && require('../db/memory').config.network.port.includes(peers_array[index_dc_peer].port)) ) {
         if (!_dc_peers_active_index.includes(index_dc_peer)) {
           if (!require('../db/memory').db.state.check_add_unconnected_peers_is_remove_only) { // if it's not remove only
@@ -698,7 +701,12 @@ exports.disconnect_socket_server_with_sid = (sid) => {
 
 // make it generic, => utils/socketio.js
 exports.ban_and_or_try_disconnect = (reason = "", index = false, socket = false, ban = false) => {
-  console.log('\n\nBAN OR DISCONNECT\n');
+  console.log('\n\nBAN OR DISCONNECT');
+  if (process.env.FOOSTACK_DEV === false) {
+    console.log('  running as PROD, ban is ip only !');
+  } else {
+    console.log('  if the port is false, its not a ban (FOOSTACK_DEV)');
+  }
   const _ban = { reason: reason, sockets_to_disconnect: [] }
   if ((index >= 0) && (typeof require('../db/memory').db.peers[index] == 'object')) {
     const _peer_index_object_keys = Object.keys(require('../db/memory').db.peers[index]);
@@ -746,9 +754,8 @@ exports.ban_and_or_try_disconnect = (reason = "", index = false, socket = false,
     ban = false ;
   }*/
   if (ban && _ban_object_keys.includes('server')) {
-    console.log(`\n => add ban ${_ban.reason} server: ${_ban.server} port: ${_ban_object_keys.includes('port') ? _ban.port : false}`);
-    console.log(`      if is FOOSTACK_DEV and port false, dont ban\n`);
-    const _port = (process.env.FOOSTACK_DEV == false) ? false : _ban_object_keys.includes('port') ? _ban.port : 'WITHOUTBAN';
+    console.log(`\n => add ban     ${_ban.reason}     server: ${_ban.server} port: ${_ban_object_keys.includes('port') ? _ban.port : false}`);
+    const _port = (process.env.FOOSTACK_DEV === false) ? false : _ban_object_keys.includes('port') ? _ban.port : 'WITHOUTBAN';
     if (_port != 'WITHOUTBAN') {
       require('../db/memory').db.blacklist.push({
         server: _ban.server,
@@ -757,6 +764,7 @@ exports.ban_and_or_try_disconnect = (reason = "", index = false, socket = false,
       });
     }
   }
+  // only to console log reasons
   if (!ban && _ban_object_keys.includes('server')) {
     const _ban_reasons = [];
     for (let forindex = 0; forindex < require('../db/memory').db.blacklist.length; forindex++) {

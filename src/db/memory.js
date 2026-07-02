@@ -94,14 +94,14 @@ exports.db = {
               if (typeof server != 'string') { return false ; }
               if (typeof port == 'number') { port = `${port}` }
               const _default_peers = default_peers ? default_peers : this.db.default_peers;
-              return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && ((process.env.FOOSTACK_DEV == false) ? true : (port == el.port)) }).length > 0 ? true : false;
-              //return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && (port == el.port) }).length > 0 ? true : false;
+              //maybe better to not bypass port
+              //return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && ((process.env.FOOSTACK_DEV === false) ? true : (port == el.port)) }).length > 0 ? true : false;
+              return _default_peers.filter((el) => { return (server.length > el.server.length ? server.includes(el.server) : el.server.includes(server)) && (port == el.port) }).length > 0 ? true : false;
             },
             is_blacklisted: (server, port = false) => {
                 if (typeof port == 'number') { port = `${port}` }
-                if ((typeof server != 'string') || (typeof port != 'string')) { return true; }
-                // running npm run build replace process.env.FOOSTACK_DEV by false
-                return this.db.blacklist.filter((peer) => { return (server.length > peer.server.length ? server.includes(peer.server) : peer.server.includes(server)) && ((port === peer.port) || (peer.port === false)) }).length == 0 ? false : true ;
+                if ((typeof server != 'string') || ((typeof port != 'string') && (port !== false))) { return true; }
+                return this.db.blacklist.filter((peer) => { return ((server.length > peer.server.length) ? server.includes(peer.server) : peer.server.includes(server)) && (process.env.FOOSTACK_DEV ? (port == peer.port) : true) }).length == 0 ? false : true ;
             },
             index_pub: (pub, array) => {
                 for (let index = 0; index < array.length; index++) {

@@ -1,5 +1,5 @@
 
-exports.IS_FOOSTACK_DEV=true;
+exports.IS_FOOSTACK_DEV=!0;
 
 const __domething = require('./domething');
 const __body_ui = require('./body/ui');

@@ -3,6 +3,7 @@ const webpack = require('webpack');
 
 const TerserPlugin = require("terser-webpack-plugin");
 
+// drop_console: process.env.FOOSTACK_DEV == 'yes' ? false : true,
 const _terser_options = { // https://github.com/terser/terser/tree/v5.3.8?tab=readme-ov-file#minify-options
     parse: false,
     compress: {

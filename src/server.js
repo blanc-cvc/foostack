@@ -14,10 +14,10 @@ require('./db/memory').db.connectivity_peers = [
 ];
 
 // require('./db/memory').db.default_peers have to contain trusted peers only
-if (process.env.FOOSTACK_DEV == "yes") {
+if (process.env.FOOSTACK_DEV === "yes") {
     require('./db/memory').db.default_peers = [
-        { server: '127.0.0.1', port: '8001' }
-        ,{ server: '127.0.0.1', port: '8002' }
+        { server: '127.0.0.1', port: '8004' }
+        ,{ server: '127.0.0.1', port: '8005' }
         //, { server: '127.0.0.1', port: '8003' }
     ];
 } else {
@@ -32,7 +32,7 @@ if (process.env.FOOSTACK_DEV == "yes") {
 exports.http = require('node:http').createServer( (req, res) => {
     //running npm run build replace process.env.FOOSTACK_DEV by false
     console.log(req.url);
-    if (process.env.FOOSTACK_DEV == "yes") {
+    if (process.env.FOOSTACK_DEV === "yes") {
       const _path_css = path.join(__dirname, 'web/css/styles.bundle.css');
       const _path_js_header = path.join(__dirname, 'web/js/header.bundle.js');
       const _path_js_body = path.join(__dirname, 'web/js/body.bundle.js');
@@ -145,6 +145,7 @@ __utils_network.get_port_to_use( async (port) => {
           console.log('require(\'./db/memory\').db.state');
           console.log(require('./db/memory').db.state);
         } else if (_input[0] === 'addpeer') {
+          // not working
           await require('./db/memory').db.set.peer(require('./db/memory').db.peers.length, { server: _input[1], port: _input[2].replace(/\n/g, '') }); // ADD PEER ONCE
           await require('./controllers/socketio.s2s').init_ioclient_from_outside(require('./db/memory').db.peers.length-1); 
         } else {

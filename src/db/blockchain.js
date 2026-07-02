@@ -115,6 +115,8 @@ exports.new_block = (data, chain) => {
       }
     }
 }
+
+//TODO try to init IOC for new block of subscribed chains
 exports.new_block_from_node = async (block, peer_index, peer_pub) => {
   if (__utils_typeof.is_typeof_chain_string(block.chain)) {
     if (typeof this.blockchains[block.chain] == 'object') { // subscribed
@@ -184,6 +186,16 @@ exports.ask_and_verify_default_peers = (callback_data, peer_index, peer_pub) => 
   const _chainhash = require('node:crypto').createHash('sha256').update(JSON.stringify(callback_data.response)).digest('hex');
   if (typeof this.blockchains[_chainhash] == 'object') { // subscribed
     if (require('./memory').db.get.peer.is_default_peer(require('./memory').db.peers[peer_index].server, require('./memory').db.peers[peer_index].port, callback_data.response)) { // this peer is included
+      
+      //{
+      //    node: 'get_trusted',
+      //    callback: 'ask_and_verify_default_peers',
+      //    response: [
+      //      { server: '127.0.0.1', port: '8004' },
+      //      { server: '127.0.0.1', port: '8005' }
+      //    ]
+      //}
+      //TypeError: Cannot read properties of undefined (reading 'list')
       if (this.blockchains[_chainhash].default_peers_check.list.length == 0) {
         console.log(`\n ask_and_verify_default_peers chain: ${_chainhash}, setting default_peers_check.list and default_peers_check.unchecked\n`);
         for (let index = 0; index < callback_data.response.length; index++) {
@@ -213,6 +225,8 @@ exports.ask_and_verify_default_peers = (callback_data, peer_index, peer_pub) => 
         for (let index = 0; index < this.blockchains[_chainhash].default_peers_check.checked.length; index++) {
           this.blockchains[_chainhash].default_peers.push(this.blockchains[_chainhash].default_peers_check.checked[index])
         }
+        
+        //CHECK IF DELETE IS OK
         delete this.blockchains[_chainhash].default_peers_check;
         console.log(`\n ask_and_verify_default_peers chain: ${_chainhash} is trusted waiting for new blocks\n`);
         console.log(this.blockchains[_chainhash].default_peers);

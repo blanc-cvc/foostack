@@ -7,9 +7,9 @@ fs.readFile(serverbundlejsfile, 'utf8', (err_read_serverbundlejsfile,data_server
   if (err_read_serverbundlejsfile) { return console.log(err_read_serverbundlejsfile) }
   
   // even if FOOSTACK_DEV env var is set, set the UI var helper too
-  data_serverbundlejsfile = data_serverbundlejsfile.replace(/process\.env\.FOOSTACK_DEV/g,"false");
-  data_serverbundlejsfile = data_serverbundlejsfile.replace(/exports\.IS_FOOSTACK_DEV=true/g,"exports.IS_FOOSTACK_DEV=false");
-  data_serverbundlejsfile = data_serverbundlejsfile.replace(/exports\.IS_FOOSTACK_DEV=!0/g,"exports.IS_FOOSTACK_DEV=0");
+  // !0: true     !1: false
+  data_serverbundlejsfile = data_serverbundlejsfile.replace(/process\.env\.FOOSTACK_DEV/g,"!1");
+  data_serverbundlejsfile = data_serverbundlejsfile.replace(/exports\.IS_FOOSTACK_DEV=\!0/g,"exports.IS_FOOSTACK_DEV=!1");
   
   // => keep read()
   // db.blockchain, read() used for test to modify the db file while server is running
