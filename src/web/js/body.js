@@ -119,10 +119,11 @@ const stateCheck_complete = window.setInterval(() => {
 
                         
                         // TEST AFTER LOCK
-                        print_edit_node(Document.prototype, 'Document.prototype');
-                        print_edit_node(Navigator.prototype, 'Navigator.prototype');
-                        print_edit_node(navigator, 'navigator');
-                        print_edit_node(document.querySelector('body > button'), 'body > button');
+                        //print_edit_node(Document.prototype, 'Document.prototype');
+                        //print_edit_node(Navigator.prototype, 'Navigator.prototype');
+                        //print_edit_node(navigator, 'navigator');
+                        //print_edit_node(document.querySelector('body > button'), 'body > button');
+                        print_edit_node(document.querySelector('body > header > main > nav > section.right'), 'body > header > main > nav > section.right');
                         
                       }
                     }, 0); // stateCheck_lock_prototypes
@@ -188,7 +189,9 @@ const onmessage_common_socketio = (data) => {
       case "set":
         switch (data.name) {
           case "pub":
-            if (!Object.keys(data).includes('err')) {
+            if (Object.keys(data).includes('id')) {
+              __body_ui.page_main_add('_connection', '====== USER ID:', data.id);
+            } else if (!Object.keys(data).includes('err')) {
               __body_ui.page_main_add('_connection', '=========== SIGN:', 'sign the next message content (paste it in the input below and send it)', details_as_text_node = false, background_color = 'blue');
               __body_ui.page_main_add('_connection', '=========== MESSAGE:', data.message, details_as_text_node = true);
             } else {
@@ -215,10 +218,12 @@ const onmessage_common_socketio = (data) => {
               case "connected":
                 __body_ui.page_main_add('_connection' , '=========== CONNECTED', data, details_as_text_node = false, background_color = 'green');
                 document.querySelector("body > footer > aside.right > button > i").classList.replace("icon-color-blue", "icon-color-green");
+                __body_ui.data_from_socket.set_userid(data.deserialized_data.id);
                 break;
               case "disconnected":
                 __body_ui.page_main_add('_connection' , '=========== DISCONNECTED', data, details_as_text_node = false, background_color = 'purple');
                 document.querySelector("body > footer > aside.right > button > i").classList.replace("icon-color-green", "icon-color-blue");
+                //__body_ui.data_from_socket.unset_userid();
                 break;
             }
           }

@@ -367,6 +367,37 @@ body {
     }
 
     // NAV
+    > header > * > nav > section * { // header
+      line-height: var(--header-height);
+    }
+    > main > * > header > nav > section * { // subheader
+      line-height: var(--sub-header-height);
+    }
+    > footer > * > nav > section * { // footer
+      line-height: var(--footer-height);
+    }
+    > main > * > header > nav > section * { // subfooter
+      line-height: var(--sub-header-footer);
+    }
+    > header > * > nav > section > *,
+    > main > * > header > nav > section > *,
+    > footer > * > nav > section > *,
+    > main > * > header > nav > section > * { // inner nav elements padding
+      padding: 0 var(--default-margin-padding);
+    }
+    > *:not(main) > main > nav > section,
+    > main > * > *:not(main) > nav > section { // every center nav
+      flex-direction: column;
+      &:first-child {
+        align-items: flex-start;
+      }
+      &:not(:first-child):not(:last-child) {
+        align-items: center;
+      }
+      &:last-child {
+        align-items: flex-end;
+      }
+    }
     > *:not(main) > * > nav > section,
     > main > * > *:not(main) > nav > section,
     > *:not(main) > * > nav,

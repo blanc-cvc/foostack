@@ -2,7 +2,7 @@ const openpgp = require('openpgp');
 const { serialize, deserialize } = require('../../../common/network');
 
 const _location = typeof document !== ('undefined'||null) ? '' : `${location.origin}`;
-const client = { uuid: false, openpgpcreds: false, serverpub: false, socket: false, login_auto_user_openpgpcreds: false, login_user_openpgpcreds: { seed: false, pub: false, signed_seed: false } }
+const client = { uuid: false, openpgpcreds: false, serverpub: false, socket: false, login_auto_user_openpgpcreds: false, login_user_openpgpcreds: { seed: false, pub: false, signed_seed: false, userinfos: false } }
 
 // if i'm a worker
 if (typeof document === "undefined") {
@@ -23,7 +23,12 @@ if (typeof document === "undefined") {
 }
 
 const gen_login_auto_user_openpgpcreds = async () => {
-  client.login_auto_user_openpgpcreds = await require('../../../common/crypto').openpgp.generate('user', 'user@test.local');
+  client.login_auto_user_openpgpcreds = await require('../../../common/crypto').openpgp.generate('user', `user@${require('uuid').v5('login', require('uuid').v4())}.random`);
+  try {
+    const keypub = await openpgp.readKey({ armoredKey: Buffer.from(client.login_auto_user_openpgpcreds.pub, 'base64').toString() }) ;
+    postMessage({ on: 'set', name: 'pub', id: keypub.getUserIDs()[0] });
+    client.login_auto_user_openpgpcreds.userinfos = keypub.getUserIDs()[0];
+  } catch (e) {}
 }
 const send_data = async (data) => {
   const _serialized = await serialize(client.uuid, client.openpgpcreds, data, client.serverpub);
@@ -46,6 +51,11 @@ const init = (init_cb_fn) => {
     });
     client.socket.on('data', async (serialized_data) => {
         const _deserialized = await deserialize(client.openpgpcreds, serialized_data, client.serverpub);
+        
+        // if connected, return id (client.login_user_openpgpcreds.userinfos) with data
+        if (Object.keys(_deserialized.data).includes('response') && (_deserialized.data.response == "connected")) {
+          Object.assign(_deserialized.data, { id: client.login_auto_user_openpgpcreds ? client.login_auto_user_openpgpcreds.userinfos : client.login_user_openpgpcreds.userinfos });
+        }
     
         init_cb_fn({ on: 'data', deserialized_data: _deserialized.data });
         //init_cb_fn({ socket: { on: 'data', id: client.socket.io.engine.id, uuid: client.uuid, deserialized: _deserialized  } });
@@ -117,7 +127,12 @@ const onmessage_common = (onmessage_common_e, onmessage_common_cb_fn = false) =>
       if (client.login_user_openpgpcreds.seed && !client.login_user_openpgpcreds.pub) {
         const _askSigned = async () => {
           try {
-            const keypub = await openpgp.readKey({ armoredKey: onmessage_common_e.data.data });
+            const keypub = onmessage_common_e.data.data.includes('BEGIN PGP')
+              ? await openpgp.readKey({ armoredKey: onmessage_common_e.data.data })
+              : await openpgp.readKey({ armoredKey: Buffer.from(onmessage_common_e.data.data, 'base64').toString() }) ;
+            // send back user id
+            client.login_user_openpgpcreds.userinfos = keypub.getUserIDs()[0];
+            postMessage({ on: 'set', name: 'pub', id: keypub.getUserIDs()[0] });
           } catch (e) {
             postMessage({ on: 'set', name: 'pub', err: onmessage_common_e.data.data, _err: 'pub (user) not valid' });
             return;

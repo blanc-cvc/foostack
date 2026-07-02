@@ -17,6 +17,16 @@ const _state = {
 exports.get_state = () => { return _state; }
 
 
+exports.data_from_socket = {
+  set_userid: (id) => {
+    const button_el = this.new_html_element(tagname = 'button', content = id, classlist = ['button_userid'], keep_fn = []);
+    document.querySelector('body > header > main > nav > section:last-child').appendChild(button_el);
+  },
+  unset_userid: () => {
+    
+  }
+}
+
 // https://stackoverflow.com/questions/11547672/how-to-stringify-event-object/58416333#58416333
 const normalize_object = (object, depth=0, max_depth=4) => {
     if (depth > max_depth) {

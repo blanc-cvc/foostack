@@ -78,17 +78,23 @@ exports.keep_fn = (nodes_array, functions_array) => {
         }
       }
       try {
-        if (nodes_array[i_node][0] == '*') {
-          const nodes = document.querySelector(nodes_array[i_node].slice(1));
+        if (nodes_array[i_node][0] == '*') { // for wildcard like '*.scroll-vertical-as-horizontal'
+          const nodes = document.querySelector(nodes_array[i_node].slice(1)); // querySelectorAll ?
           for (_i_node in nodes) {
             add_keep_fn(nodes[_i_node]);
           }
         } else {
           const node = typeof nodes_array[i_node] == 'string'
-            ? nodes_array[i_node] == "window" ? window : nodes_array[i_node] == "document" ? document : document.querySelector(nodes_array[i_node])
+            ? nodes_array[i_node] == "window" ? window : nodes_array[i_node] == "document" ? document : document.querySelectorAll(nodes_array[i_node])
             : nodes_array[i_node];
           
-          add_keep_fn(node);
+          if (typeof node.length === 'number') {
+            for (_i_node in node) {
+              add_keep_fn(node[_i_node]);
+            }
+          } else {
+            add_keep_fn(node);
+          }
         }
       } catch (e) {
         //require('./body/ui').page_main_add('_console', 'keep_fn error', nodes_array[i_node]);
@@ -106,7 +112,8 @@ const insert_keep_fn = () => {
   this.keep_fn([
     'body > main > main > main > ._main',
     'body > main > main > main > ._console',
-    'body > main > main > main > ._connection'
+    'body > main > main > main > ._connection',
+    'body > header > main > nav > section'
     ], ['appendChild']);
   this.keep_fn([
     'body > main > main > main > .notifications'
